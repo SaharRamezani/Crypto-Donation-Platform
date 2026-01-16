@@ -1,0 +1,57 @@
+services:
+  # Hardhat Node - Local Ethereum blockchain
+  hardhat:
+    build:
+      context: .
+      target: hardhat-node
+    container_name: crypto-donation-hardhat
+    ports:
+      - "8545:8545"
+    networks:
+      - crypto-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8545"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Contract Deployer - Deploys contracts after hardhat is ready
+  deployer:
+    build:
+      context: .
+      target: hardhat-node
+    container_name: crypto-donation-deployer
+    depends_on:
+      hardhat:
+        condition: service_healthy
+    environment:
+      - HARDHAT_NETWORK=localhost
+    command: >
+      sh -c "
+        sleep 5 &&
+        npx hardhat run scripts/deploy.js --network localhost &&
+        echo 'Contract deployed successfully!'
+      "
+    networks:
+      - crypto-network
+    volumes:
+      - ./frontend:/app/frontend
+
+  # Frontend - Nginx web server
+  frontend:
+    build:
+      context: .
+      target: frontend
+    container_name: crypto-donation-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - deployer
+    networks:
+      - crypto-network
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+
+networks:
+  crypto-network:
+    driver: bridge

@@ -34,25 +34,25 @@ Crypto-Donation-Platform/
 
 ## Quick Start
 
-### 1. Install Dependencies
+### Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Compile Contract
+### Compile Contract
 
 ```bash
 npx hardhat compile
 ```
 
-### 3. Run Tests
+### Run Tests
 
 ```bash
 npx hardhat test
 ```
 
-### 4. Deploy Locally
+### Deploy Locally
 
 Start a local Hardhat node:
 ```bash
@@ -64,7 +64,29 @@ In another terminal, deploy:
 npx hardhat run scripts/deploy.js --network localhost
 ```
 
-### 5. Deploy to Sepolia
+### Deploy with Docker
+
+Start all services with Docker Compose:
+```bash
+# Start Docker daemon first (may need sudo)
+sudo systemctl start docker
+
+# Then run:
+docker compose up --build
+```
+
+This starts:
+- **Hardhat Node** on `http://localhost:8545`
+- **Frontend** on `http://localhost:3000`
+
+Open **http://localhost:3000** in your browser to use the dApp!
+
+To stop:
+```bash
+docker compose down
+```
+
+### Deploy to Sepolia
 
 1. Copy `.env.example` to `.env`:
    ```bash
@@ -80,11 +102,17 @@ npx hardhat run scripts/deploy.js --network localhost
    npx hardhat run scripts/deploy.js --network sepolia
    ```
 
-### 6. Run Frontend
+### Run Frontend
 
 Open `frontend/index.html` in a web browser. The frontend works in:
 - **Demo Mode** - Without MetaMask, shows sample data
 - **Live Mode** - With MetaMask connected to Sepolia
+
+Run the frontend server:
+```bash
+cd frontend
+python3 -m http.server 3000
+```
 
 ## Smart Contract
 
@@ -122,7 +150,3 @@ Open `frontend/index.html` in a web browser. The frontend works in:
 - **Frontend**: HTML, CSS, JavaScript
 - **Blockchain Interaction**: ethers.js v5.7
 - **Network**: Ethereum Sepolia Testnet
-
-## License
-
-MIT
