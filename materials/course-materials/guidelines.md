@@ -14,9 +14,9 @@ Design and implement one or more smart contracts and a web interface to allow us
 
 - You will write the front-end to your smart contract.
 
-- You can use the library of your choice to interact with the blockchain from the client. In class we have seen ethers.js, but other libraries are available.
+- You can use the library of your choice to interact with the blockchain from the client. In class we have seen ethers.js, but other libraries are available. If you chose other libraries you must justify your choice.
 
-- We do not expect incredible interfaces, just an operable interface to interact with your smart contract(s) without using Remix or the Sepolia Explorer.
+- We need to interact with your smart contract(s) without using Remix or the Sepolia Explorer.
 
 - You will write one or more smart contracts. You can use Solidity and the Sepolia testnet or other programming languages and other testnets if you want to learn about other environments.
 

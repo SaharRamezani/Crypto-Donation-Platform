@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Donate Sepolia ETH to charitable organizations through our decentralized platform">
+    <title>Crypto Donation Platform | Support Charities with ETH</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="bg-gradient"></div>
+    <div class="bg-particles" id="particles"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">💎</span>
+                <span class="logo-text">CryptoDonate</span>
+            </div>
+            <div class="nav-links">
+                <a href="#charities" class="nav-link">Charities</a>
+                <a href="#leaderboard" class="nav-link">Leaderboard</a>
+                <a href="#history" class="nav-link">History</a>
+                <a href="#propose" class="nav-link">Propose</a>
+            </div>
+            <div class="wallet-section">
+                <div id="networkBadge" class="network-badge hidden">
+                    <span class="network-dot"></span>
+                    <span id="networkName">Sepolia</span>
+                </div>
+                <button id="connectWallet" class="btn btn-primary">
+                    <span class="btn-icon">🔗</span>
+                    Connect Wallet
+                </button>
+                <div id="walletInfo" class="wallet-info hidden">
+                    <span id="walletAddress" class="wallet-address"></span>
+                    <span id="walletBalance" class="wallet-balance"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="gradient-text">Transparent Giving</span>
+                <br>On The Blockchain
+            </h1>
+            <p class="hero-subtitle">
+                Donate Sepolia ETH directly to verified charitable organizations. 
+                Every transaction is recorded immutably on the Ethereum blockchain.
+            </p>
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <span class="stat-value" id="totalDonated">0.00</span>
+                    <span class="stat-label">ETH Donated</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="totalCharities">0</span>
+                    <span class="stat-label">Charities</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="totalDonors">0</span>
+                    <span class="stat-label">Donors</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Charities Section -->
+    <section id="charities" class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">🏛️ Verified Charities</h2>
+                <p class="section-subtitle">Select a charity to make your donation</p>
+            </div>
+            <div id="charitiesGrid" class="charities-grid">
+                <!-- Charities will be loaded dynamically -->
+                <div class="loading-skeleton">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Donation Modal -->
+    <div id="donationModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeDonationModal">&times;</button>
+            <div class="modal-header">
+                <span class="modal-icon">💝</span>
+                <h3 class="modal-title">Make a Donation</h3>
+            </div>
+            <div class="modal-body">
+                <div class="selected-charity">
+                    <span class="charity-label">Donating to:</span>
+                    <span id="selectedCharityName" class="charity-name-display"></span>
+                </div>
+                <div class="form-group">
+                    <label for="donationAmount">Amount (ETH)</label>
+                    <div class="input-with-icon">
+                        <input type="number" id="donationAmount" placeholder="0.01" step="0.001" min="0.001">
+                        <span class="input-icon">Ξ</span>
+                    </div>
+                    <div class="quick-amounts">
+                        <button class="quick-amount" data-amount="0.01">0.01 ETH</button>
+                        <button class="quick-amount" data-amount="0.05">0.05 ETH</button>
+                        <button class="quick-amount" data-amount="0.1">0.1 ETH</button>
+                        <button class="quick-amount" data-amount="0.5">0.5 ETH</button>
+                    </div>
+                </div>
+                <button id="confirmDonation" class="btn btn-primary btn-full">
+                    <span class="btn-icon">💎</span>
+                    Confirm Donation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Section -->
+    <section id="leaderboard" class="section section-alt">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">🏆 Top Donors</h2>
+                <p class="section-subtitle">Celebrating our most generous contributors</p>
+            </div>
+            <div class="leaderboard-container">
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Donor</th>
+                            <th>Total Donated</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                        <!-- Leaderboard entries will be loaded dynamically -->
+                    </tbody>
+                </table>
+                <div id="leaderboardEmpty" class="empty-state">
+                    <span class="empty-icon">📊</span>
+                    <p>No donations yet. Be the first!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Transaction History Section -->
+    <section id="history" class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">📜 Recent Donations</h2>
+                <p class="section-subtitle">Live feed of all donations on the platform</p>
+            </div>
+            <div class="history-container">
+                <div id="historyList" class="history-list">
+                    <!-- Transaction history will be loaded dynamically -->
+                </div>
+                <div id="historyEmpty" class="empty-state">
+                    <span class="empty-icon">🕐</span>
+                    <p>No transactions yet</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Propose Charity Section -->
+    <section id="propose" class="section section-alt">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">✨ Propose a Charity</h2>
+                <p class="section-subtitle">Submit a new charity for admin approval</p>
+            </div>
+            <div class="propose-form-container">
+                <form id="proposeForm" class="propose-form">
+                    <div class="form-group">
+                        <label for="charityName">Charity Name</label>
+                        <input type="text" id="charityName" placeholder="e.g., Local Food Bank" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="charityDescription">Description</label>
+                        <textarea id="charityDescription" placeholder="Describe the charity's mission..." rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="charityWallet">Wallet Address</label>
+                        <input type="text" id="charityWallet" placeholder="0x..." pattern="^0x[a-fA-F0-9]{40}$" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <span class="btn-icon">📝</span>
+                        Submit Proposal
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Panel (Owner Only) -->
+    <section id="adminPanel" class="section admin-section hidden">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">🔐 Admin Panel</h2>
+                <p class="section-subtitle">Manage charity proposals</p>
+            </div>
+            <div class="admin-container">
+                <div id="pendingProposals" class="proposals-grid">
+                    <!-- Pending proposals will be loaded dynamically -->
+                </div>
+                <div id="noProposals" class="empty-state">
+                    <span class="empty-icon">✅</span>
+                    <p>No pending proposals</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <span class="logo-icon">💎</span>
+                    <span class="logo-text">CryptoDonate</span>
+                </div>
+                <p class="footer-text">
+                    Built on Ethereum • Powered by Smart Contracts
+                </p>
+                <div class="footer-links">
+                    <a href="#" id="viewContract" class="footer-link">View Contract</a>
+                    <span class="divider">•</span>
+                    <span id="contractAddress" class="contract-address">Not Deployed</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
