@@ -752,6 +752,6 @@
       "type": "receive"
     }
   ],
-  "network": "localhost",
+  "network": "docker",
   "chainId": 31337
 }

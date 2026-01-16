@@ -9,27 +9,22 @@ services:
       - "8545:8545"
     networks:
       - crypto-network
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8545"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-  # Contract Deployer - Deploys contracts after hardhat is ready
+  # Contract Deployer - Deploys contracts after hardhat starts
   deployer:
     build:
       context: .
       target: hardhat-node
     container_name: crypto-donation-deployer
     depends_on:
-      hardhat:
-        condition: service_healthy
+      - hardhat
     environment:
-      - HARDHAT_NETWORK=localhost
+      - HARDHAT_NETWORK=docker
     command: >
       sh -c "
-        sleep 5 &&
-        npx hardhat run scripts/deploy.js --network localhost &&
+        echo 'Waiting for Hardhat node to start...' &&
+        sleep 15 &&
+        npx hardhat run scripts/deploy.js --network docker &&
         echo 'Contract deployed successfully!'
       "
     networks:
@@ -46,11 +41,12 @@ services:
     ports:
       - "3000:80"
     depends_on:
-      - deployer
+      - hardhat
     networks:
       - crypto-network
     volumes:
       - ./frontend:/usr/share/nginx/html:ro
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
 
 networks:
   crypto-network:

@@ -34,44 +34,14 @@ Crypto-Donation-Platform/
 
 ## Quick Start
 
-### Install Dependencies
-
-```bash
-npm install
-```
-
-### Compile Contract
-
-```bash
-npx hardhat compile
-```
-
-### Run Tests
-
-```bash
-npx hardhat test
-```
-
-### Deploy Locally
-
-Start a local Hardhat node:
-```bash
-npx hardhat node
-```
-
-In another terminal, deploy:
-```bash
-npx hardhat run scripts/deploy.js --network localhost
-```
-
-### Deploy with Docker
+### Run with Docker (Recommended)
 
 Start all services with Docker Compose:
 ```bash
 # Start Docker daemon first (may need sudo)
 sudo systemctl start docker
 
-# Then run:
+# Build and run all services
 docker compose up --build
 ```
 
@@ -86,7 +56,14 @@ To stop:
 docker compose down
 ```
 
-### Deploy to Sepolia
+### Run Tests
+
+```bash
+npm install
+npx hardhat test
+```
+
+### Deploy to Sepolia (Public Testnet)
 
 1. Copy `.env.example` to `.env`:
    ```bash
@@ -102,17 +79,32 @@ docker compose down
    npx hardhat run scripts/deploy.js --network sepolia
    ```
 
-### Run Frontend
 
-Open `frontend/index.html` in a web browser. The frontend works in:
-- **Demo Mode** - Without MetaMask, shows sample data
-- **Live Mode** - With MetaMask connected to Sepolia
+## Deployment & Verification
 
-Run the frontend server:
-```bash
-cd frontend
-python3 -m http.server 3000
-```
+### Local vs. Public Networks
+
+- **Local Network (Hardhat/Docker)**: A private blockchain running on your computer. It uses auto-generated test accounts with fake ETH. No real private keys are needed for deployment. Perfect for development.
+- **Public Testnet (Sepolia)**: A public version of Ethereum for testing. Anyone can see your contract here. You need actual Sepolia ETH and your own **Private Key** to deploy.
+
+### Deployment & Private Keys
+
+When deploying to a **Public Network (Sepolia)**:
+1. You must provide your **Private Key** in a `.env` file. 
+2. This is because public blockchains require a signature from a real account to authorize the deployment transaction and pay gas fees.
+3. Your local Docker deployment doesn't ask for a key because it uses Hardhat's pre-configured development accounts.
+
+### Contract Verification
+
+**Verification** is the process of making your source code public on [Etherscan](https://etherscan.io).
+- It allows users to read your code and verify it matches the deployed bytecode.
+- It enables direct interaction with the contract through the Etherscan UI.
+- To verify on Sepolia: 
+  ```bash
+  npx hardhat verify --network sepolia <CONTRACT_ADDRESS_ON_SEPOLIA>
+  ```
+
+---
 
 ## Smart Contract
 
