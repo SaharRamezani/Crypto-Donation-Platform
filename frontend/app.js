@@ -361,7 +361,17 @@ async function loadAllData() {
 
 async function loadCharities() {
     try {
-        charities = await contract.getActiveCharities();
+        const rawCharities = await contract.getActiveCharities();
+
+        // Fetch balances for each charity to see what's available for withdrawal
+        charities = await Promise.all(rawCharities.map(async (charity) => {
+            const balance = await contract.charityBalances(charity.id);
+            return {
+                ...charity,
+                availableBalance: balance
+            };
+        }));
+
         renderCharities(charities);
     } catch (error) {
         console.error('Error loading charities:', error);
@@ -424,26 +434,69 @@ function renderCharities(charityList) {
         return;
     }
 
-    elements.charitiesGrid.innerHTML = charityList.map(charity => `
-        <div class="charity-card" data-id="${charity.id}">
-            <div class="charity-header">
-                <div class="charity-icon">${getCharityIcon(charity.name)}</div>
-                <div class="charity-info">
-                    <h3 class="charity-name">${escapeHtml(charity.name)}</h3>
+    elements.charitiesGrid.innerHTML = charityList.map(charity => {
+        const isCharityOwner = userAddress && charity.walletAddress.toLowerCase() === userAddress.toLowerCase();
+        const hasBalance = charity.availableBalance && charity.availableBalance.gt(0);
+
+        return `
+            <div class="charity-card" data-id="${charity.id}">
+                <div class="charity-header">
+                    <div class="charity-icon">${getCharityIcon(charity.name)}</div>
+                    <div class="charity-info">
+                        <h3 class="charity-name">${escapeHtml(charity.name)}</h3>
+                    </div>
                 </div>
+                <p class="charity-description">${escapeHtml(charity.description)}</p>
+                
+                ${isCharityOwner ? `
+                    <div class="charity-owner-panel">
+                        <div class="charity-stat">
+                            <span class="charity-stat-label">Available to Withdraw</span>
+                            <span class="charity-stat-value success-text">${parseFloat(ethers.utils.formatEther(charity.availableBalance)).toFixed(4)} ETH</span>
+                        </div>
+                        ${hasBalance ? `
+                            <button class="btn btn-success btn-full withdraw-btn" data-id="${charity.id}">
+                                <span class="btn-icon">💰</span> Withdraw Funds
+                            </button>
+                        ` : `
+                            <button class="btn btn-secondary btn-full" disabled>
+                                No Funds Available
+                            </button>
+                        `}
+                    </div>
+                ` : ''}
+
+                <p class="charity-wallet">Wallet: ${shortenAddress(charity.walletAddress)}</p>
+                <button class="btn btn-primary btn-full donate-btn" data-id="${charity.id}" data-name="${escapeHtml(charity.name)}">
+                    <span class="btn-icon">💝</span> Donate
+                </button>
             </div>
-            <p class="charity-description">${escapeHtml(charity.description)}</p>
-            <p class="charity-wallet">Wallet: ${shortenAddress(charity.walletAddress)}</p>
-            <button class="btn btn-primary btn-full donate-btn" data-id="${charity.id}" data-name="${escapeHtml(charity.name)}">
-                <span class="btn-icon">💝</span> Donate
-            </button>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 
     // Add click handlers
     document.querySelectorAll('.donate-btn').forEach(btn => {
         btn.addEventListener('click', () => openDonationModal(btn.dataset.id, btn.dataset.name));
     });
+
+    document.querySelectorAll('.withdraw-btn').forEach(btn => {
+        btn.addEventListener('click', () => withdrawFunds(btn.dataset.id));
+    });
+}
+
+async function withdrawFunds(charityId) {
+    try {
+        showToast('info', 'Processing', 'Please confirm the withdrawal in MetaMask...');
+
+        const tx = await contract.withdrawFunds(charityId);
+        await tx.wait();
+
+        showToast('success', 'Success!', 'Funds withdrawn successfully!');
+        loadAllData();
+    } catch (error) {
+        console.error('Withdrawal error:', error);
+        showToast('error', 'Withdrawal Failed', error.reason || error.message || 'Transaction failed');
+    }
 }
 
 function renderLeaderboard(leaderboard) {

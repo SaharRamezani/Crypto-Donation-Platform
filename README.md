@@ -351,6 +351,23 @@ When deploying to a **Public Network (Sepolia)**:
 - **Checks-Effects-Interactions** - State updates before external calls
 - **Access Control** - `onlyOwner` modifier for admin functions
 
+### Charity Withdrawals (Pull over Push Pattern)
+
+This project implements the **"Pull over Push"** security pattern (also known as the Withdrawal Pattern).
+
+#### What is Pull over Push?
+Instead of the contract automatically "pushing" (sending) donations to a charity's wallet at the moment a donor contributes, the funds are held securely in the contract. The charity owner must then "pull" (withdraw) their accumulated funds manually.
+
+#### Why use this?
+1. **Security**: Automatically sending money to an address can be dangerous. If a charity's wallet is a malicious smart contract, its "fallback" function could trigger a reentrancy attack or purposefully fail the transaction to crash your dApp.
+2. **Standardization**: It ensures that a failure in one charity's receiving logic doesn't affect the donor's experience or the platform's overall reliability.
+3. **Gas Efficiency**: The cost of transferring the funds is handled by the recipient when they choose to withdraw, rather than adding cost to every single donation transaction.
+
+#### How to Withdraw
+1. Connect your MetaMask wallet using the **exact address** registered for the charity.
+2. A green **"Withdraw Funds"** panel will appear on your charity card.
+3. Click the button and confirm the transaction to claim your ETH.
+
 ## Technology Stack
 
 - **Smart Contract**: Solidity ^0.8.19

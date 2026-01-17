@@ -476,6 +476,31 @@ body {
     word-break: break-all;
 }
 
+/* Charity Owner Panel */
+.charity-owner-panel {
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px solid rgba(16, 185, 129, 0.1);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.charity-owner-panel .charity-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.success-text {
+    color: var(--success);
+    font-weight: 600;
+}
+
+.withdraw-btn {
+    margin-top: var(--spacing-xs);
+}
+
 /* Modal */
 .modal {
     position: fixed;
