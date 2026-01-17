@@ -125,6 +125,45 @@ npm install
 npx hardhat test
 ```
 
+### Share Remotely with Cloudflare Tunnel
+
+To demo the project to remote stakeholders using your laptop as a server:
+
+#### Step 1: Install Cloudflared
+
+```bash
+wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+sudo dpkg -i cloudflared-linux-amd64.deb
+```
+
+#### Step 2: Start Your Project
+
+```bash
+docker compose up
+```
+
+#### Step 3: Create a Public Tunnel
+
+In a new terminal:
+
+```bash
+cloudflared tunnel --url http://localhost:3000
+```
+
+You'll see output like:
+```
+|  Your quick Tunnel has been created! Visit it at:                    |
+|  https://random-words-here.trycloudflare.com                         |
+```
+
+Share this URL with stakeholders!
+
+#### Important Notes
+
+- **Keep both terminals running** (docker compose + cloudflared)
+- **Stakeholders need MetaMask** connected to Sepolia to interact with the real contract
+- **URL changes each time** you restart cloudflared (unless you create a named tunnel with a Cloudflare account)
+
 ### Deploy to Sepolia (Public Testnet)
 
 #### Prerequisites

@@ -126,10 +126,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Check if already connected
     if (window.ethereum && window.ethereum.selectedAddress) {
         await connectWallet();
-    } else {
-        // Load demo data if not connected
-        loadDemoData();
+    } else if (!window.ethereum) {
+        // No wallet extension detected - show install prompt
+        showMetaMaskInstallPrompt();
     }
+    // If ethereum exists but not connected, user can click Connect Wallet button
 });
 
 async function loadContractConfig() {
@@ -694,102 +695,37 @@ function setupContractEventListeners() {
     });
 }
 
-// ============ Demo Data ============
-function loadDemoData() {
-    // Demo charities
-    const demoCharities = [
-        { id: { eq: () => true, toString: () => '1' }, name: 'Red Cross', description: 'Humanitarian aid and disaster relief worldwide', walletAddress: '0x1111111111111111111111111111111111111111', totalReceived: { toString: () => '2500000000000000000' }, isActive: true },
-        { id: { eq: () => true, toString: () => '2' }, name: 'UNICEF', description: "Children's rights and development advocacy", walletAddress: '0x2222222222222222222222222222222222222222', totalReceived: { toString: () => '1800000000000000000' }, isActive: true },
-        { id: { eq: () => true, toString: () => '3' }, name: 'Doctors Without Borders', description: 'Medical care in crisis zones', walletAddress: '0x3333333333333333333333333333333333333333', totalReceived: { toString: () => '3200000000000000000' }, isActive: true },
-        { id: { eq: () => true, toString: () => '4' }, name: 'World Wildlife Fund', description: 'Conservation and environmental protection', walletAddress: '0x4444444444444444444444444444444444444444', totalReceived: { toString: () => '950000000000000000' }, isActive: true },
-        { id: { eq: () => true, toString: () => '5' }, name: 'Save the Children', description: 'Child welfare and education support', walletAddress: '0x5555555555555555555555555555555555555555', totalReceived: { toString: () => '1500000000000000000' }, isActive: true }
-    ];
-
-    // Mock ethers utilities for demo
-    const mockFormatEther = (val) => {
-        const str = typeof val === 'object' ? val.toString() : val;
-        return (parseInt(str) / 1e18).toString();
-    };
-
-    // Save original for later use
-    charities = demoCharities;
-
-    // Render demo data
-    elements.charitiesGrid.innerHTML = demoCharities.map(charity => `
-        <div class="charity-card" data-id="${charity.id.toString()}">
-            <div class="charity-header">
-                <div class="charity-icon">${getCharityIcon(charity.name)}</div>
-                <div class="charity-info">
-                    <h3 class="charity-name">${escapeHtml(charity.name)}</h3>
-                </div>
+// ============ MetaMask Install Prompt ============
+function showMetaMaskInstallPrompt() {
+    // Show install prompt in charities grid
+    elements.charitiesGrid.innerHTML = `
+        <div class="metamask-install-prompt">
+            <div class="install-icon">🦊</div>
+            <h3>MetaMask Required</h3>
+            <p>To interact with the blockchain and make donations, you need to install the MetaMask wallet extension.</p>
+            <div class="install-buttons">
+                <a href="https://addons.mozilla.org/en-US/firefox/addon/ether-metamask/" 
+                   target="_blank" 
+                   class="btn btn-install btn-firefox">
+                    <span class="btn-icon">🦊</span>
+                    Install for Firefox
+                </a>
+                <a href="https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn" 
+                   target="_blank" 
+                   class="btn btn-install btn-chrome">
+                    <span class="btn-icon">🌐</span>
+                    Install for Chrome
+                </a>
             </div>
-            <p class="charity-description">${escapeHtml(charity.description)}</p>
-            <p class="charity-wallet">Wallet: ${shortenAddress(charity.walletAddress)}</p>
-            <button class="btn btn-primary btn-full donate-btn" data-id="${charity.id.toString()}" data-name="${escapeHtml(charity.name)}">
-                <span class="btn-icon">💝</span> Donate
-            </button>
+            <p class="install-note">After installing, refresh this page to connect your wallet.</p>
         </div>
-    `).join('');
+    `;
 
-    // Demo stats
-    elements.totalDonated.textContent = '9.95';
-    elements.totalCharities.textContent = '5';
-    elements.totalDonors.textContent = '23';
-
-    // Demo leaderboard
-    const demoLeaderboard = [
-        { donorAddress: '0xAbC123...F456', totalDonated: '3.5' },
-        { donorAddress: '0xDeF789...B012', totalDonated: '2.1' },
-        { donorAddress: '0x456Abc...D789', totalDonated: '1.8' },
-        { donorAddress: '0x789Def...A456', totalDonated: '1.2' },
-        { donorAddress: '0xBcd012...E789', totalDonated: '0.85' }
-    ];
-
-    elements.leaderboardEmpty.classList.add('hidden');
-    elements.leaderboardBody.innerHTML = demoLeaderboard.map((donor, index) => `
-        <tr>
-            <td>
-                <span class="rank-badge ${getRankClass(index + 1)}">${index + 1}</span>
-            </td>
-            <td>
-                <span class="donor-address">${donor.donorAddress}</span>
-            </td>
-            <td>
-                <span class="donation-amount">${donor.totalDonated} ETH</span>
-            </td>
-        </tr>
-    `).join('');
-
-    // Demo history
-    const demoHistory = [
-        { donor: '0xAbC123...F456', charityName: 'Red Cross', amount: '0.5', time: '2 minutes ago' },
-        { donor: '0xDeF789...B012', charityName: 'UNICEF', amount: '0.25', time: '15 minutes ago' },
-        { donor: '0x456Abc...D789', charityName: 'Doctors Without Borders', amount: '1.0', time: '1 hour ago' },
-        { donor: '0xBcd012...E789', charityName: 'World Wildlife Fund', amount: '0.1', time: '3 hours ago' }
-    ];
-
-    elements.historyEmpty.classList.add('hidden');
-    elements.historyList.innerHTML = demoHistory.map(donation => `
-        <div class="history-item">
-            <div class="history-icon">💎</div>
-            <div class="history-details">
-                <div class="history-main">
-                    <span class="history-donor">${donation.donor}</span>
-                    <span class="history-arrow">→</span>
-                    <span class="history-charity">${donation.charityName}</span>
-                </div>
-                <div class="history-meta">${donation.time}</div>
-            </div>
-            <div class="history-amount">${donation.amount} ETH</div>
-        </div>
-    `).join('');
-
-    // Add click handlers for demo
-    document.querySelectorAll('.donate-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            showToast('warning', 'Demo Mode', 'Connect your wallet to make real donations');
-        });
-    });
+    // Clear other sections
+    elements.leaderboardBody.innerHTML = '';
+    elements.leaderboardEmpty.classList.remove('hidden');
+    elements.historyList.innerHTML = '';
+    elements.historyEmpty.classList.remove('hidden');
 }
 
 // ============ Utility Functions ============
