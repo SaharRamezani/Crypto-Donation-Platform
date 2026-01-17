@@ -138,17 +138,25 @@ async function loadContractConfig() {
         if (response.ok) {
             const config = await response.json();
             CONFIG.contractAddress = config.address;
+            CONFIG.loadedChainId = config.chainId;
 
             // Use the full ABI from the JSON file if available
             if (config.abi) {
                 CONFIG.contractABI = config.abi;
             }
 
-            // Update footer
+            // Update footer based on network
             if (config.address) {
                 elements.contractAddress.textContent = shortenAddress(config.address);
-                elements.viewContract.href = `https://sepolia.etherscan.io/address/${config.address}`;
+                // Show Etherscan link for Sepolia, nothing for local
+                if (config.chainId === 11155111) {
+                    elements.viewContract.href = `https://sepolia.etherscan.io/address/${config.address}`;
+                } else {
+                    elements.viewContract.href = '#';
+                }
             }
+
+            console.log(`Loaded contract: ${config.address} on ${config.network} (chain ${config.chainId})`);
         }
     } catch (error) {
         console.log('No contract config found, using demo mode');
@@ -247,12 +255,21 @@ async function connectWallet() {
         console.log('Connected to network:', network.name, 'Chain ID:', network.chainId);
         console.log('Contract address:', CONFIG.contractAddress);
 
-        // Check if on Sepolia (chainId 11155111)
-        if (network.chainId !== 11155111) {
-            showToast('error', 'Wrong Network', `Please switch MetaMask to Sepolia. Current: ${network.name || 'Chain ' + network.chainId}`);
+        // Check if on a supported network (Sepolia or local Hardhat)
+        const isSepolia = network.chainId === 11155111;
+        const isLocalHardhat = network.chainId === 31337;
+
+        if (!isSepolia && !isLocalHardhat) {
+            showToast('error', 'Wrong Network', `Please switch MetaMask to Sepolia or Hardhat Local. Current: ${network.name || 'Chain ' + network.chainId}`);
             elements.connectWallet.disabled = false;
             elements.connectWallet.innerHTML = '<span class="btn-icon">🔗</span> Connect Wallet';
             return;
+        }
+
+        // Reload config if it doesn't match the current network
+        if (CONFIG.loadedChainId !== network.chainId) {
+            console.log('Config chain mismatch, reloading config for chain:', network.chainId);
+            await loadContractConfig();
         }
 
         // Update UI

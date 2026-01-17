@@ -56,6 +56,68 @@ To stop:
 docker compose down
 ```
 
+### Local Development with Hardhat (No Deployment Needed)
+
+If you want to test transactions locally without deploying to Sepolia, follow these steps:
+
+#### Step 1: Force Local Hardhat Mode
+
+By default, Docker uses your Sepolia deployment if it exists. To force local Hardhat mode:
+
+```bash
+# Temporarily rename/remove the Sepolia config
+mv frontend/contract-abi.sepolia.json frontend/contract-abi.sepolia.json.bak
+
+# Start Docker (will deploy to local Hardhat)
+docker compose up --build
+```
+
+#### Step 2: Add Hardhat Network to MetaMask
+
+1. Open MetaMask → Click network dropdown → **Add Network**
+2. Click **"Add a network manually"**
+3. Enter these settings:
+
+| Field | Value |
+|-------|-------|
+| Network Name | Hardhat Local |
+| RPC URL | `http://localhost:8545` |
+| Chain ID | `31337` |
+| Currency Symbol | ETH |
+
+4. Click **Save**
+
+#### Step 3: Import a Test Account
+
+Hardhat provides pre-funded test accounts. Import one into MetaMask:
+
+1. When Docker starts, you'll see accounts in the terminal like:
+   ```
+   Account #0: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 (10000 ETH)
+   Private Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+   ```
+
+2. In MetaMask → Click account icon → **Import Account**
+3. Paste the private key (without `0x` prefix)
+4. Click **Import**
+
+> **Note**: These are test accounts with fake ETH. Never use these private keys on mainnet!
+
+#### Step 4: Connect and Test
+
+1. Make sure MetaMask is on the **Hardhat Local** network
+2. Go to `http://localhost:3000`
+3. Connect wallet and make test donations!
+
+#### Restore Sepolia Mode
+
+When done testing locally, restore your Sepolia config:
+
+```bash
+mv frontend/contract-abi.sepolia.json.bak frontend/contract-abi.sepolia.json
+docker compose down && docker compose up
+```
+
 ### Run Tests
 
 ```bash
