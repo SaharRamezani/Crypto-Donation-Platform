@@ -98,6 +98,8 @@ const elements = {
 
     donationModal: document.getElementById('donationModal'),
     closeDonationModal: document.getElementById('closeDonationModal'),
+    installModal: document.getElementById('installModal'),
+    closeInstallModal: document.getElementById('closeInstallModal'),
     selectedCharityName: document.getElementById('selectedCharityName'),
     donationAmount: document.getElementById('donationAmount'),
     confirmDonation: document.getElementById('confirmDonation'),
@@ -123,14 +125,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeEventListeners();
     await loadContractConfig();
 
-    // Check if already connected
+    // Initialize provider and load data even if not connected
+    await setupProvider();
+    await loadAllData();
+
+    // Check if already connected via MetaMask
     if (window.ethereum && window.ethereum.selectedAddress) {
         await connectWallet();
-    } else {
-        // Load demo data if not connected
-        loadDemoData();
     }
 });
+
+async function setupProvider() {
+    // If we already have a provider (e.g. from connectWallet), don't override
+    if (provider) return;
+
+    if (window.ethereum) {
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+    } else {
+        // Fallback to read-only provider
+        // If Sepolia (11155111), use a public RPC. Otherwise assume local (8545)
+        const rpcUrl = (CONFIG.loadedChainId === 11155111)
+            ? 'https://ethereum-sepolia-rpc.publicnode.com'
+            : 'http://localhost:8545';
+
+        console.log(`No MetaMask detected. Using read-only fallback: ${rpcUrl}`);
+        provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    }
+
+    // Initialize contract with the provider (read-only)
+    if (CONFIG.contractAddress) {
+        contract = new ethers.Contract(CONFIG.contractAddress, CONTRACT_ABI, provider);
+    }
+}
 
 async function loadContractConfig() {
     try {
@@ -138,17 +164,25 @@ async function loadContractConfig() {
         if (response.ok) {
             const config = await response.json();
             CONFIG.contractAddress = config.address;
+            CONFIG.loadedChainId = config.chainId;
 
             // Use the full ABI from the JSON file if available
             if (config.abi) {
                 CONFIG.contractABI = config.abi;
             }
 
-            // Update footer
+            // Update footer based on network
             if (config.address) {
                 elements.contractAddress.textContent = shortenAddress(config.address);
-                elements.viewContract.href = `https://sepolia.etherscan.io/address/${config.address}`;
+                // Show Etherscan link for Sepolia, nothing for local
+                if (config.chainId === 11155111) {
+                    elements.viewContract.href = `https://sepolia.etherscan.io/address/${config.address}`;
+                } else {
+                    elements.viewContract.href = '#';
+                }
             }
+
+            console.log(`Loaded contract: ${config.address} on ${config.network} (chain ${config.chainId})`);
         }
     } catch (error) {
         console.log('No contract config found, using demo mode');
@@ -196,6 +230,12 @@ function initializeEventListeners() {
         if (e.target === elements.donationModal) closeDonationModal();
     });
 
+    // Install modal
+    elements.closeInstallModal.addEventListener('click', closeInstallModal);
+    elements.installModal.addEventListener('click', (e) => {
+        if (e.target === elements.installModal) closeInstallModal();
+    });
+
     // Quick amount buttons
     document.querySelectorAll('.quick-amount').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -219,7 +259,8 @@ function initializeEventListeners() {
 // ============ Wallet Connection ============
 async function connectWallet() {
     if (!window.ethereum) {
-        showToast('error', 'MetaMask Required', 'Please install MetaMask to use this dApp');
+        showMetaMaskInstallPrompt();
+        showToast('warning', 'MetaMask Required', 'Please install MetaMask to make donations');
         return;
     }
 
@@ -247,12 +288,21 @@ async function connectWallet() {
         console.log('Connected to network:', network.name, 'Chain ID:', network.chainId);
         console.log('Contract address:', CONFIG.contractAddress);
 
-        // Check if on Sepolia (chainId 11155111)
-        if (network.chainId !== 11155111) {
-            showToast('error', 'Wrong Network', `Please switch MetaMask to Sepolia. Current: ${network.name || 'Chain ' + network.chainId}`);
+        // Check if on a supported network (Sepolia or local Hardhat)
+        const isSepolia = network.chainId === 11155111;
+        const isLocalHardhat = network.chainId === 31337;
+
+        if (!isSepolia && !isLocalHardhat) {
+            showToast('error', 'Wrong Network', `Please switch MetaMask to Sepolia or Hardhat Local. Current: ${network.name || 'Chain ' + network.chainId}`);
             elements.connectWallet.disabled = false;
             elements.connectWallet.innerHTML = '<span class="btn-icon">🔗</span> Connect Wallet';
             return;
+        }
+
+        // Reload config if it doesn't match the current network
+        if (CONFIG.loadedChainId !== network.chainId) {
+            console.log('Config chain mismatch, reloading config for chain:', network.chainId);
+            await loadContractConfig();
         }
 
         // Update UI
@@ -324,6 +374,7 @@ function handleChainChanged() {
 
 // ============ Data Loading ============
 async function loadAllData() {
+    if (!contract) return;
     try {
         await Promise.all([
             loadCharities(),
@@ -342,8 +393,19 @@ async function loadAllData() {
 }
 
 async function loadCharities() {
+    if (!contract) return;
     try {
-        charities = await contract.getActiveCharities();
+        const rawCharities = await contract.getActiveCharities();
+
+        // Fetch balances for each charity to see what's available for withdrawal
+        charities = await Promise.all(rawCharities.map(async (charity) => {
+            const balance = await contract.charityBalances(charity.id);
+            return {
+                ...charity,
+                availableBalance: balance
+            };
+        }));
+
         renderCharities(charities);
     } catch (error) {
         console.error('Error loading charities:', error);
@@ -351,6 +413,7 @@ async function loadCharities() {
 }
 
 async function loadStats() {
+    if (!contract) return;
     try {
         const [totalDonations, charityCount] = await Promise.all([
             contract.totalDonations(),
@@ -368,6 +431,7 @@ async function loadStats() {
 }
 
 async function loadLeaderboard() {
+    if (!contract) return;
     try {
         const leaderboard = await contract.getDonorLeaderboard(10);
         renderLeaderboard(leaderboard);
@@ -377,6 +441,7 @@ async function loadLeaderboard() {
 }
 
 async function loadHistory() {
+    if (!contract) return;
     try {
         const donations = await contract.getRecentDonations(20);
         renderHistory(donations);
@@ -406,36 +471,69 @@ function renderCharities(charityList) {
         return;
     }
 
-    elements.charitiesGrid.innerHTML = charityList.map(charity => `
-        <div class="charity-card" data-id="${charity.id}">
-            <div class="charity-header">
-                <div class="charity-icon">${getCharityIcon(charity.name)}</div>
-                <div class="charity-info">
-                    <h3 class="charity-name">${escapeHtml(charity.name)}</h3>
+    elements.charitiesGrid.innerHTML = charityList.map(charity => {
+        const isCharityOwner = userAddress && charity.walletAddress.toLowerCase() === userAddress.toLowerCase();
+        const hasBalance = charity.availableBalance && charity.availableBalance.gt(0);
+
+        return `
+            <div class="charity-card" data-id="${charity.id}">
+                <div class="charity-header">
+                    <div class="charity-icon">${getCharityIcon(charity.name)}</div>
+                    <div class="charity-info">
+                        <h3 class="charity-name">${escapeHtml(charity.name)}</h3>
+                    </div>
                 </div>
+                <p class="charity-description">${escapeHtml(charity.description)}</p>
+                
+                ${isCharityOwner ? `
+                    <div class="charity-owner-panel">
+                        <div class="charity-stat">
+                            <span class="charity-stat-label">Available to Withdraw</span>
+                            <span class="charity-stat-value success-text">${parseFloat(ethers.utils.formatEther(charity.availableBalance)).toFixed(4)} ETH</span>
+                        </div>
+                        ${hasBalance ? `
+                            <button class="btn btn-success btn-full withdraw-btn" data-id="${charity.id}">
+                                <span class="btn-icon">💰</span> Withdraw Funds
+                            </button>
+                        ` : `
+                            <button class="btn btn-secondary btn-full" disabled>
+                                No Funds Available
+                            </button>
+                        `}
+                    </div>
+                ` : ''}
+
+                <p class="charity-wallet">Wallet: ${shortenAddress(charity.walletAddress)}</p>
+                <button class="btn btn-primary btn-full donate-btn" data-id="${charity.id}" data-name="${escapeHtml(charity.name)}">
+                    <span class="btn-icon">💝</span> Donate
+                </button>
             </div>
-            <p class="charity-description">${escapeHtml(charity.description)}</p>
-            <div class="charity-stats">
-                <div class="charity-stat">
-                    <span class="charity-stat-value">${parseFloat(ethers.utils.formatEther(charity.totalReceived)).toFixed(4)}</span>
-                    <span class="charity-stat-label">ETH Received</span>
-                </div>
-                <div class="charity-stat">
-                    <span class="charity-stat-value">${charity.isActive ? '✅' : '❌'}</span>
-                    <span class="charity-stat-label">Status</span>
-                </div>
-            </div>
-            <p class="charity-wallet">Wallet: ${shortenAddress(charity.walletAddress)}</p>
-            <button class="btn btn-primary btn-full donate-btn" data-id="${charity.id}" data-name="${escapeHtml(charity.name)}">
-                <span class="btn-icon">💝</span> Donate
-            </button>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 
     // Add click handlers
     document.querySelectorAll('.donate-btn').forEach(btn => {
         btn.addEventListener('click', () => openDonationModal(btn.dataset.id, btn.dataset.name));
     });
+
+    document.querySelectorAll('.withdraw-btn').forEach(btn => {
+        btn.addEventListener('click', () => withdrawFunds(btn.dataset.id));
+    });
+}
+
+async function withdrawFunds(charityId) {
+    try {
+        showToast('info', 'Processing', 'Please confirm the withdrawal in MetaMask...');
+
+        const tx = await contract.withdrawFunds(charityId);
+        await tx.wait();
+
+        showToast('success', 'Success!', 'Funds withdrawn successfully!');
+        loadAllData();
+    } catch (error) {
+        console.error('Withdrawal error:', error);
+        showToast('error', 'Withdrawal Failed', error.reason || error.message || 'Transaction failed');
+    }
 }
 
 function renderLeaderboard(leaderboard) {
@@ -534,8 +632,14 @@ function renderProposals(proposals) {
 let selectedCharityId = null;
 
 function openDonationModal(charityId, charityName) {
+    if (!window.ethereum) {
+        showMetaMaskInstallPrompt();
+        return;
+    }
+
     if (!signer) {
         showToast('warning', 'Wallet Required', 'Please connect your wallet first');
+        connectWallet();
         return;
     }
 
@@ -687,112 +791,13 @@ function setupContractEventListeners() {
     });
 }
 
-// ============ Demo Data ============
-function loadDemoData() {
-    // Demo charities
-    const demoCharities = [
-        { id: { eq: () => true, toString: () => '1' }, name: 'Red Cross', description: 'Humanitarian aid and disaster relief worldwide', walletAddress: '0x1111111111111111111111111111111111111111', totalReceived: { toString: () => '2500000000000000000' }, isActive: true },
-        { id: { eq: () => true, toString: () => '2' }, name: 'UNICEF', description: "Children's rights and development advocacy", walletAddress: '0x2222222222222222222222222222222222222222', totalReceived: { toString: () => '1800000000000000000' }, isActive: true },
-        { id: { eq: () => true, toString: () => '3' }, name: 'Doctors Without Borders', description: 'Medical care in crisis zones', walletAddress: '0x3333333333333333333333333333333333333333', totalReceived: { toString: () => '3200000000000000000' }, isActive: true },
-        { id: { eq: () => true, toString: () => '4' }, name: 'World Wildlife Fund', description: 'Conservation and environmental protection', walletAddress: '0x4444444444444444444444444444444444444444', totalReceived: { toString: () => '950000000000000000' }, isActive: true },
-        { id: { eq: () => true, toString: () => '5' }, name: 'Save the Children', description: 'Child welfare and education support', walletAddress: '0x5555555555555555555555555555555555555555', totalReceived: { toString: () => '1500000000000000000' }, isActive: true }
-    ];
+// ============ MetaMask Install Prompt ============
+function showMetaMaskInstallPrompt() {
+    elements.installModal.classList.add('active');
+}
 
-    // Mock ethers utilities for demo
-    const mockFormatEther = (val) => {
-        const str = typeof val === 'object' ? val.toString() : val;
-        return (parseInt(str) / 1e18).toString();
-    };
-
-    // Save original for later use
-    charities = demoCharities;
-
-    // Render demo data
-    elements.charitiesGrid.innerHTML = demoCharities.map(charity => `
-        <div class="charity-card" data-id="${charity.id.toString()}">
-            <div class="charity-header">
-                <div class="charity-icon">${getCharityIcon(charity.name)}</div>
-                <div class="charity-info">
-                    <h3 class="charity-name">${escapeHtml(charity.name)}</h3>
-                </div>
-            </div>
-            <p class="charity-description">${escapeHtml(charity.description)}</p>
-            <div class="charity-stats">
-                <div class="charity-stat">
-                    <span class="charity-stat-value">${parseFloat(mockFormatEther(charity.totalReceived)).toFixed(4)}</span>
-                    <span class="charity-stat-label">ETH Received</span>
-                </div>
-                <div class="charity-stat">
-                    <span class="charity-stat-value">${charity.isActive ? '✅' : '❌'}</span>
-                    <span class="charity-stat-label">Status</span>
-                </div>
-            </div>
-            <p class="charity-wallet">Wallet: ${shortenAddress(charity.walletAddress)}</p>
-            <button class="btn btn-primary btn-full donate-btn" data-id="${charity.id.toString()}" data-name="${escapeHtml(charity.name)}">
-                <span class="btn-icon">💝</span> Donate
-            </button>
-        </div>
-    `).join('');
-
-    // Demo stats
-    elements.totalDonated.textContent = '9.95';
-    elements.totalCharities.textContent = '5';
-    elements.totalDonors.textContent = '23';
-
-    // Demo leaderboard
-    const demoLeaderboard = [
-        { donorAddress: '0xAbC123...F456', totalDonated: '3.5' },
-        { donorAddress: '0xDeF789...B012', totalDonated: '2.1' },
-        { donorAddress: '0x456Abc...D789', totalDonated: '1.8' },
-        { donorAddress: '0x789Def...A456', totalDonated: '1.2' },
-        { donorAddress: '0xBcd012...E789', totalDonated: '0.85' }
-    ];
-
-    elements.leaderboardEmpty.classList.add('hidden');
-    elements.leaderboardBody.innerHTML = demoLeaderboard.map((donor, index) => `
-        <tr>
-            <td>
-                <span class="rank-badge ${getRankClass(index + 1)}">${index + 1}</span>
-            </td>
-            <td>
-                <span class="donor-address">${donor.donorAddress}</span>
-            </td>
-            <td>
-                <span class="donation-amount">${donor.totalDonated} ETH</span>
-            </td>
-        </tr>
-    `).join('');
-
-    // Demo history
-    const demoHistory = [
-        { donor: '0xAbC123...F456', charityName: 'Red Cross', amount: '0.5', time: '2 minutes ago' },
-        { donor: '0xDeF789...B012', charityName: 'UNICEF', amount: '0.25', time: '15 minutes ago' },
-        { donor: '0x456Abc...D789', charityName: 'Doctors Without Borders', amount: '1.0', time: '1 hour ago' },
-        { donor: '0xBcd012...E789', charityName: 'World Wildlife Fund', amount: '0.1', time: '3 hours ago' }
-    ];
-
-    elements.historyEmpty.classList.add('hidden');
-    elements.historyList.innerHTML = demoHistory.map(donation => `
-        <div class="history-item">
-            <div class="history-icon">💎</div>
-            <div class="history-details">
-                <div class="history-main">
-                    <span class="history-donor">${donation.donor}</span>
-                    <span class="history-arrow">→</span>
-                    <span class="history-charity">${donation.charityName}</span>
-                </div>
-                <div class="history-meta">${donation.time}</div>
-            </div>
-            <div class="history-amount">${donation.amount} ETH</div>
-        </div>
-    `).join('');
-
-    // Add click handlers for demo
-    document.querySelectorAll('.donate-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            showToast('warning', 'Demo Mode', 'Connect your wallet to make real donations');
-        });
-    });
+function closeInstallModal() {
+    elements.installModal.classList.remove('active');
 }
 
 // ============ Utility Functions ============

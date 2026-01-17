@@ -57,7 +57,12 @@ async function main() {
 
     if (fs.existsSync(artifactPath)) {
         const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
-        const abiPath = path.join(frontendDir, "contract-abi.json");
+
+        // Use network-specific config file for Sepolia, generic for others
+        const configFileName = (hre.network.name === "sepolia")
+            ? "contract-abi.sepolia.json"
+            : "contract-abi.json";
+        const abiPath = path.join(frontendDir, configFileName);
 
         const frontendConfig = {
             address: contractAddress,
