@@ -98,6 +98,8 @@ const elements = {
 
     donationModal: document.getElementById('donationModal'),
     closeDonationModal: document.getElementById('closeDonationModal'),
+    installModal: document.getElementById('installModal'),
+    closeInstallModal: document.getElementById('closeInstallModal'),
     selectedCharityName: document.getElementById('selectedCharityName'),
     donationAmount: document.getElementById('donationAmount'),
     confirmDonation: document.getElementById('confirmDonation'),
@@ -123,15 +125,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeEventListeners();
     await loadContractConfig();
 
-    // Check if already connected
+    // Initialize provider and load data even if not connected
+    await setupProvider();
+    await loadAllData();
+
+    // Check if already connected via MetaMask
     if (window.ethereum && window.ethereum.selectedAddress) {
         await connectWallet();
-    } else if (!window.ethereum) {
-        // No wallet extension detected - show install prompt
-        showMetaMaskInstallPrompt();
     }
-    // If ethereum exists but not connected, user can click Connect Wallet button
 });
+
+async function setupProvider() {
+    // If we already have a provider (e.g. from connectWallet), don't override
+    if (provider) return;
+
+    if (window.ethereum) {
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+    } else {
+        // Fallback to read-only provider
+        // If Sepolia (11155111), use a public RPC. Otherwise assume local (8545)
+        const rpcUrl = (CONFIG.loadedChainId === 11155111)
+            ? 'https://ethereum-sepolia-rpc.publicnode.com'
+            : 'http://localhost:8545';
+
+        console.log(`No MetaMask detected. Using read-only fallback: ${rpcUrl}`);
+        provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+    }
+
+    // Initialize contract with the provider (read-only)
+    if (CONFIG.contractAddress) {
+        contract = new ethers.Contract(CONFIG.contractAddress, CONTRACT_ABI, provider);
+    }
+}
 
 async function loadContractConfig() {
     try {
@@ -205,6 +230,12 @@ function initializeEventListeners() {
         if (e.target === elements.donationModal) closeDonationModal();
     });
 
+    // Install modal
+    elements.closeInstallModal.addEventListener('click', closeInstallModal);
+    elements.installModal.addEventListener('click', (e) => {
+        if (e.target === elements.installModal) closeInstallModal();
+    });
+
     // Quick amount buttons
     document.querySelectorAll('.quick-amount').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -228,7 +259,8 @@ function initializeEventListeners() {
 // ============ Wallet Connection ============
 async function connectWallet() {
     if (!window.ethereum) {
-        showToast('error', 'MetaMask Required', 'Please install MetaMask to use this dApp');
+        showMetaMaskInstallPrompt();
+        showToast('warning', 'MetaMask Required', 'Please install MetaMask to make donations');
         return;
     }
 
@@ -342,6 +374,7 @@ function handleChainChanged() {
 
 // ============ Data Loading ============
 async function loadAllData() {
+    if (!contract) return;
     try {
         await Promise.all([
             loadCharities(),
@@ -360,6 +393,7 @@ async function loadAllData() {
 }
 
 async function loadCharities() {
+    if (!contract) return;
     try {
         const rawCharities = await contract.getActiveCharities();
 
@@ -379,6 +413,7 @@ async function loadCharities() {
 }
 
 async function loadStats() {
+    if (!contract) return;
     try {
         const [totalDonations, charityCount] = await Promise.all([
             contract.totalDonations(),
@@ -396,6 +431,7 @@ async function loadStats() {
 }
 
 async function loadLeaderboard() {
+    if (!contract) return;
     try {
         const leaderboard = await contract.getDonorLeaderboard(10);
         renderLeaderboard(leaderboard);
@@ -405,6 +441,7 @@ async function loadLeaderboard() {
 }
 
 async function loadHistory() {
+    if (!contract) return;
     try {
         const donations = await contract.getRecentDonations(20);
         renderHistory(donations);
@@ -595,8 +632,14 @@ function renderProposals(proposals) {
 let selectedCharityId = null;
 
 function openDonationModal(charityId, charityName) {
+    if (!window.ethereum) {
+        showMetaMaskInstallPrompt();
+        return;
+    }
+
     if (!signer) {
         showToast('warning', 'Wallet Required', 'Please connect your wallet first');
+        connectWallet();
         return;
     }
 
@@ -750,35 +793,11 @@ function setupContractEventListeners() {
 
 // ============ MetaMask Install Prompt ============
 function showMetaMaskInstallPrompt() {
-    // Show install prompt in charities grid
-    elements.charitiesGrid.innerHTML = `
-        <div class="metamask-install-prompt">
-            <div class="install-icon">🦊</div>
-            <h3>MetaMask Required</h3>
-            <p>To interact with the blockchain and make donations, you need to install the MetaMask wallet extension.</p>
-            <div class="install-buttons">
-                <a href="https://addons.mozilla.org/en-US/firefox/addon/ether-metamask/" 
-                   target="_blank" 
-                   class="btn btn-install btn-firefox">
-                    <span class="btn-icon">🦊</span>
-                    Install for Firefox
-                </a>
-                <a href="https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn" 
-                   target="_blank" 
-                   class="btn btn-install btn-chrome">
-                    <span class="btn-icon">🌐</span>
-                    Install for Chrome
-                </a>
-            </div>
-            <p class="install-note">After installing, refresh this page to connect your wallet.</p>
-        </div>
-    `;
+    elements.installModal.classList.add('active');
+}
 
-    // Clear other sections
-    elements.leaderboardBody.innerHTML = '';
-    elements.leaderboardEmpty.classList.remove('hidden');
-    elements.historyList.innerHTML = '';
-    elements.historyEmpty.classList.remove('hidden');
+function closeInstallModal() {
+    elements.installModal.classList.remove('active');
 }
 
 // ============ Utility Functions ============
