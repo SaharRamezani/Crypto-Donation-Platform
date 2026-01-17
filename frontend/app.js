@@ -410,7 +410,9 @@ async function loadAllData() {
 async function loadCharities() {
     if (!contract) return;
     try {
-        const rawCharities = await contract.getActiveCharities();
+        // Owner should see all charities (including inactive ones for reactivation)
+        // Others only see active ones
+        const rawCharities = await (isOwner ? contract.getCharities() : contract.getActiveCharities());
 
         // Fetch balances for each charity to see what's available for withdrawal
         charities = await Promise.all(rawCharities.map(async (charity) => {
@@ -491,7 +493,7 @@ function renderCharities(charityList) {
         const hasBalance = charity.availableBalance && charity.availableBalance.gt(0);
 
         return `
-            <div class="charity-card" data-id="${charity.id}">
+            <div class="charity-card ${!charity.isActive ? 'deactivated' : ''}" data-id="${charity.id}">
                 <div class="charity-header">
                     <div class="charity-icon">${getCharityIcon(charity.name)}</div>
                     <div class="charity-info">
@@ -519,9 +521,23 @@ function renderCharities(charityList) {
                 ` : ''}
 
                 <p class="charity-wallet">Wallet: ${shortenAddress(charity.walletAddress)}</p>
-                <button class="btn btn-primary btn-full donate-btn" data-id="${charity.id}" data-name="${escapeHtml(charity.name)}">
-                    <span class="btn-icon">💝</span> Donate
-                </button>
+                
+                <div class="charity-actions">
+                    ${charity.isActive ? `
+                        <button class="btn btn-primary donate-btn" data-id="${charity.id}" data-name="${escapeHtml(charity.name)}">
+                            <span class="btn-icon">💝</span> Donate
+                        </button>
+                    ` : `
+                        <button class="btn btn-secondary btn-full" disabled>
+                            Inactive
+                        </button>
+                    `}
+                    ${isOwner ? `
+                        <button class="btn btn-outline ${charity.isActive ? 'btn-danger' : 'btn-success'} toggle-status-btn" data-id="${charity.id}">
+                            <span class="btn-icon">${charity.isActive ? '🚫' : '✅'}</span> ${charity.isActive ? 'Deactivate' : 'Activate'}
+                        </button>
+                    ` : ''}
+                </div>
             </div>
         `;
     }).join('');
@@ -534,6 +550,25 @@ function renderCharities(charityList) {
     document.querySelectorAll('.withdraw-btn').forEach(btn => {
         btn.addEventListener('click', () => withdrawFunds(btn.dataset.id));
     });
+
+    document.querySelectorAll('.toggle-status-btn').forEach(btn => {
+        btn.addEventListener('click', () => toggleCharityStatus(btn.dataset.id));
+    });
+}
+
+async function toggleCharityStatus(charityId) {
+    try {
+        showToast('info', 'Processing', 'Please confirm the status change in MetaMask...');
+
+        const tx = await contract.toggleCharityStatus(charityId);
+        await tx.wait();
+
+        showToast('success', 'Success!', 'Charity status updated successfully!');
+        loadAllData();
+    } catch (error) {
+        console.error('Toggle status error:', error);
+        showToast('error', 'Update Failed', error.reason || error.message || 'Transaction failed');
+    }
 }
 
 async function withdrawFunds(charityId) {

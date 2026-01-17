@@ -2,4 +2,6 @@
 - [] Add a dark mode toggle
 - [] Add a responsive layout
 - [] Add the private networks to the networks list in MetaMask and test with Hardhat
-- [] 
+- [X] Charity Status Toggle
+- [] How does the test work without adding the private networks to MetaMask? Use Hardhat when testing
+- [] Investigating the inspection errors in the browser console
