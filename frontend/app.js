@@ -154,13 +154,28 @@ async function setupProvider() {
 
     // Initialize contract with the provider (read-only)
     if (CONFIG.contractAddress) {
-        contract = new ethers.Contract(CONFIG.contractAddress, CONTRACT_ABI, provider);
+        const abi = CONFIG.contractABI || CONTRACT_ABI;
+        contract = new ethers.Contract(CONFIG.contractAddress, abi, provider);
     }
 }
 
-async function loadContractConfig() {
+async function loadContractConfig(chainId = null) {
     try {
-        const response = await fetch('contract-abi.json');
+        // If no chainId provided, try to detect from window.ethereum
+        if (!chainId && window.ethereum) {
+            try {
+                const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
+                chainId = parseInt(chainIdHex, 16);
+            } catch (e) {
+                console.log('Could not detect network for config loading');
+            }
+        }
+
+        // Use sepolia-specific config if we're on Sepolia
+        const configFile = (chainId === 11155111) ? 'contract-abi.sepolia.json' : 'contract-abi.json';
+        console.log(`Fetching config: ${configFile}`);
+
+        const response = await fetch(configFile);
         if (response.ok) {
             const config = await response.json();
             CONFIG.contractAddress = config.address;
@@ -302,7 +317,7 @@ async function connectWallet() {
         // Reload config if it doesn't match the current network
         if (CONFIG.loadedChainId !== network.chainId) {
             console.log('Config chain mismatch, reloading config for chain:', network.chainId);
-            await loadContractConfig();
+            await loadContractConfig(network.chainId);
         }
 
         // Update UI
