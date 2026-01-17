@@ -432,16 +432,6 @@ function renderCharities(charityList) {
                 </div>
             </div>
             <p class="charity-description">${escapeHtml(charity.description)}</p>
-            <div class="charity-stats">
-                <div class="charity-stat">
-                    <span class="charity-stat-value">${parseFloat(ethers.utils.formatEther(charity.totalReceived)).toFixed(4)}</span>
-                    <span class="charity-stat-label">ETH Received</span>
-                </div>
-                <div class="charity-stat">
-                    <span class="charity-stat-value">${charity.isActive ? '✅' : '❌'}</span>
-                    <span class="charity-stat-label">Status</span>
-                </div>
-            </div>
             <p class="charity-wallet">Wallet: ${shortenAddress(charity.walletAddress)}</p>
             <button class="btn btn-primary btn-full donate-btn" data-id="${charity.id}" data-name="${escapeHtml(charity.name)}">
                 <span class="btn-icon">💝</span> Donate
@@ -734,16 +724,6 @@ function loadDemoData() {
                 </div>
             </div>
             <p class="charity-description">${escapeHtml(charity.description)}</p>
-            <div class="charity-stats">
-                <div class="charity-stat">
-                    <span class="charity-stat-value">${parseFloat(mockFormatEther(charity.totalReceived)).toFixed(4)}</span>
-                    <span class="charity-stat-label">ETH Received</span>
-                </div>
-                <div class="charity-stat">
-                    <span class="charity-stat-value">${charity.isActive ? '✅' : '❌'}</span>
-                    <span class="charity-stat-label">Status</span>
-                </div>
-            </div>
             <p class="charity-wallet">Wallet: ${shortenAddress(charity.walletAddress)}</p>
             <button class="btn btn-primary btn-full donate-btn" data-id="${charity.id.toString()}" data-name="${escapeHtml(charity.name)}">
                 <span class="btn-icon">💝</span> Donate

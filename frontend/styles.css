@@ -463,25 +463,6 @@ body {
     line-height: 1.5;
 }
 
-.charity-stats {
-    display: flex;
-    justify-content: space-between;
-    padding: var(--spacing-md) 0;
-    border-top: 1px solid var(--border-color);
-    margin-bottom: var(--spacing-md);
-}
-
-.charity-stat {
-    display: flex;
-    flex-direction: column;
-}
-
-.charity-stat-value {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--accent-primary);
-}
-
 .charity-stat-label {
     font-size: 0.75rem;
     color: var(--text-muted);
