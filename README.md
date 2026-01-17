@@ -56,113 +56,12 @@ To stop:
 docker compose down
 ```
 
-### Local Development with Hardhat (No Deployment Needed)
-
-If you want to test transactions locally without deploying to Sepolia, follow these steps:
-
-#### Step 1: Force Local Hardhat Mode
-
-By default, Docker uses your Sepolia deployment if it exists. To force local Hardhat mode:
-
-```bash
-# Temporarily rename/remove the Sepolia config
-mv frontend/contract-abi.sepolia.json frontend/contract-abi.sepolia.json.bak
-
-# Start Docker (will deploy to local Hardhat)
-docker compose up --build
-```
-
-#### Step 2: Add Hardhat Network to MetaMask
-
-1. Open MetaMask → Click network dropdown → **Add Network**
-2. Click **"Add a network manually"**
-3. Enter these settings:
-
-| Field | Value |
-|-------|-------|
-| Network Name | Hardhat Local |
-| RPC URL | `http://localhost:8545` |
-| Chain ID | `31337` |
-| Currency Symbol | ETH |
-
-4. Click **Save**
-
-#### Step 3: Import a Test Account
-
-Hardhat provides pre-funded test accounts. Import one into MetaMask:
-
-1. When Docker starts, you'll see accounts in the terminal like:
-   ```
-   Account #0: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 (10000 ETH)
-   Private Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-   ```
-
-2. In MetaMask → Click account icon → **Import Account**
-3. Paste the private key (without `0x` prefix)
-4. Click **Import**
-
-> **Note**: These are test accounts with fake ETH. Never use these private keys on mainnet!
-
-#### Step 4: Connect and Test
-
-1. Make sure MetaMask is on the **Hardhat Local** network
-2. Go to `http://localhost:3000`
-3. Connect wallet and make test donations!
-
-#### Restore Sepolia Mode
-
-When done testing locally, restore your Sepolia config:
-
-```bash
-mv frontend/contract-abi.sepolia.json.bak frontend/contract-abi.sepolia.json
-docker compose down && docker compose up
-```
-
 ### Run Tests
 
 ```bash
 npm install
 npx hardhat test
 ```
-
-### Share Remotely with Cloudflare Tunnel
-
-To demo the project to remote stakeholders using your laptop as a server:
-
-#### Step 1: Install Cloudflared
-
-```bash
-wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
-sudo dpkg -i cloudflared-linux-amd64.deb
-```
-
-#### Step 2: Start Your Project
-
-```bash
-docker compose up
-```
-
-#### Step 3: Create a Public Tunnel
-
-In a new terminal:
-
-```bash
-cloudflared tunnel --url http://localhost:3000
-```
-
-You'll see output like:
-```
-|  Your quick Tunnel has been created! Visit it at:                    |
-|  https://random-words-here.trycloudflare.com                         |
-```
-
-Share this URL with stakeholders!
-
-#### Important Notes
-
-- **Keep both terminals running** (docker compose + cloudflared)
-- **Stakeholders need MetaMask** connected to Sepolia to interact with the real contract
-- **URL changes each time** you restart cloudflared (unless you create a named tunnel with a Cloudflare account)
 
 ### Deploy to Sepolia (Public Testnet)
 
@@ -350,23 +249,6 @@ When deploying to a **Public Network (Sepolia)**:
 - **Reentrancy Guard** - Prevents reentrancy attacks
 - **Checks-Effects-Interactions** - State updates before external calls
 - **Access Control** - `onlyOwner` modifier for admin functions
-
-### Charity Withdrawals (Pull over Push Pattern)
-
-This project implements the **"Pull over Push"** security pattern (also known as the Withdrawal Pattern).
-
-#### What is Pull over Push?
-Instead of the contract automatically "pushing" (sending) donations to a charity's wallet at the moment a donor contributes, the funds are held securely in the contract. The charity owner must then "pull" (withdraw) their accumulated funds manually.
-
-#### Why use this?
-1. **Security**: Automatically sending money to an address can be dangerous. If a charity's wallet is a malicious smart contract, its "fallback" function could trigger a reentrancy attack or purposefully fail the transaction to crash your dApp.
-2. **Standardization**: It ensures that a failure in one charity's receiving logic doesn't affect the donor's experience or the platform's overall reliability.
-3. **Gas Efficiency**: The cost of transferring the funds is handled by the recipient when they choose to withdraw, rather than adding cost to every single donation transaction.
-
-#### How to Withdraw
-1. Connect your MetaMask wallet using the **exact address** registered for the charity.
-2. A green **"Withdraw Funds"** panel will appear on your charity card.
-3. Click the button and confirm the transaction to claim your ETH.
 
 ## Technology Stack
 

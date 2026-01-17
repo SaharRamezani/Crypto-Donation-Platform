@@ -10,7 +10,7 @@ services:
     networks:
       - crypto-network
 
-  # Contract Deployer - Uses Sepolia if deployed, otherwise deploys to local Hardhat
+  # Contract Deployer - Deploys contracts after hardhat starts
   deployer:
     build:
       context: .
@@ -22,19 +22,10 @@ services:
       - HARDHAT_NETWORK=docker
     command: >
       sh -c "
-        echo 'Checking for existing Sepolia deployment...' &&
-        if [ -f /app/frontend/contract-abi.sepolia.json ]; then
-          echo 'Found Sepolia deployment, using real contract address...' &&
-          cp /app/frontend/contract-abi.sepolia.json /app/frontend/contract-abi.json &&
-          echo 'Using Sepolia contract:' &&
-          cat /app/frontend/contract-abi.json | head -5 &&
-          echo 'Frontend configured for Sepolia!'
-        else
-          echo 'No Sepolia deployment found, deploying to local Hardhat...' &&
-          sleep 15 &&
-          npx hardhat run scripts/deploy.js --network docker &&
-          echo 'Local contract deployed successfully!'
-        fi
+        echo 'Waiting for Hardhat node to start...' &&
+        sleep 15 &&
+        npx hardhat run scripts/deploy.js --network docker &&
+        echo 'Contract deployed successfully!'
       "
     networks:
       - crypto-network
