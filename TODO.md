@@ -1,1 +1,5 @@
 - [] Redesign the UI with a different palette
+- [] Add a dark mode toggle
+- [] Add a responsive layout
+- [] Add the private networks to the networks list in MetaMask and test with Hardhat
+- [] 
