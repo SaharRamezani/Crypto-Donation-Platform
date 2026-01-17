@@ -139,6 +139,11 @@ async function loadContractConfig() {
             const config = await response.json();
             CONFIG.contractAddress = config.address;
 
+            // Use the full ABI from the JSON file if available
+            if (config.abi) {
+                CONFIG.contractABI = config.abi;
+            }
+
             // Update footer
             if (config.address) {
                 elements.contractAddress.textContent = shortenAddress(config.address);
@@ -239,15 +244,32 @@ async function connectWallet() {
         const network = await provider.getNetwork();
         const chainId = '0x' + network.chainId.toString(16);
 
+        console.log('Connected to network:', network.name, 'Chain ID:', network.chainId);
+        console.log('Contract address:', CONFIG.contractAddress);
+
+        // Check if on Sepolia (chainId 11155111)
+        if (network.chainId !== 11155111) {
+            showToast('error', 'Wrong Network', `Please switch MetaMask to Sepolia. Current: ${network.name || 'Chain ' + network.chainId}`);
+            elements.connectWallet.disabled = false;
+            elements.connectWallet.innerHTML = '<span class="btn-icon">🔗</span> Connect Wallet';
+            return;
+        }
+
         // Update UI
         updateWalletUI(accounts[0], chainId);
 
         // Initialize contract if address is available
         if (CONFIG.contractAddress) {
-            contract = new ethers.Contract(CONFIG.contractAddress, CONTRACT_ABI, signer);
+            const abi = CONFIG.contractABI || CONTRACT_ABI;
+            contract = new ethers.Contract(CONFIG.contractAddress, abi, signer);
 
             // Check if user is owner
-            isOwner = await contract.isOwner(userAddress);
+            try {
+                isOwner = await contract.isOwner(userAddress);
+            } catch (ownerError) {
+                console.error('isOwner check failed:', ownerError);
+                isOwner = false;
+            }
 
             // Show admin panel if owner
             if (isOwner) {

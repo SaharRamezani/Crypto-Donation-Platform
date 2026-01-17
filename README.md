@@ -136,18 +136,23 @@ npx hardhat compile
 npx hardhat run scripts/deploy.js --network sepolia
 
 # To verify the contract on Etherscan, run:
-# Replace <contract_address> with the actual contract address: 0x1D6f35C4ACe61261F6f08e46e5E5e15bb7aB459c
+# Replace <contract_address> with the actual contract address: 0x586a3D92D10C37B69500D7c2Bb540e53Af1BD3ed
 npx hardhat verify --network sepolia <contract_address>
 ```
 
-#### Step 6: Update Frontend for Sepolia
+#### Step 6: Switch MetaMask to Sepolia Network
 
-The deploy script automatically updates `frontend/contract-abi.json` with the new contract address. However, you need to make sure MetaMask is connected to Sepolia:
+**Important:** You must switch MetaMask to the Sepolia network before using the dApp.
 
-1. Open MetaMask
-2. Click the network dropdown at the top
-3. Select "Sepolia test network"
-4. Visit your frontend and connect your wallet
+1. Open MetaMask in your browser
+2. Click the **network icon** in the top-left corner (it may say "Ethereum Mainnet")
+3. Select **"Sepolia"** from the dropdown list
+4. If Sepolia is not visible:
+   - Go to Settings → Advanced
+   - Enable "Show test networks"
+   - Go back and select Sepolia
+
+> ⚠️ **Common Error**: If you see "Connection Failed" or "CALL_EXCEPTION", it means MetaMask is on the wrong network. Switch to Sepolia and try again.
 
 #### Step 7: Verify Contract on Etherscan (Optional)
 
@@ -162,6 +167,32 @@ Verification makes your source code public and allows users to interact with you
 
 Once verified, you can view your contract at:
 `https://sepolia.etherscan.io/address/YOUR_CONTRACT_ADDRESS`
+
+#### Step 8: Use Frontend with Sepolia (Real Transactions)
+
+Now that your contract is deployed to Sepolia, you can make real transactions:
+
+1. **Stop Docker** (optional, but cleaner):
+   ```bash
+   docker compose down
+   ```
+
+2. **Serve your frontend** using any web server:
+   ```bash
+   cd frontend
+   npx serve .
+   ```
+   Or simply open `frontend/index.html` in your browser.
+
+3. **Switch MetaMask to Sepolia**:
+   - Open MetaMask → Click network dropdown → Select "Sepolia test network"
+
+4. **Connect & Donate**:
+   - Visit your frontend
+   - Click "Connect Wallet"
+   - Choose a charity and donate Sepolia ETH!
+
+Your transactions will be visible on [Sepolia Etherscan](https://sepolia.etherscan.io).
 
 
 ## Deployment & Verification
