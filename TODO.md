@@ -5,3 +5,8 @@
 - [X] Charity Status Toggle
 - [] How does the test work without adding the private networks to MetaMask? Use Hardhat when testing
 - [] Investigating the inspection errors in the browser console
+- [] How is ethers.js used to interact with the contract?
+- [] Use EnumerableSet for donors
+- [] Multi-admin or DAO governance
+- [] ERC20 donation support
+- [] How should we assign the icons to the charities?
