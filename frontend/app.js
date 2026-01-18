@@ -113,6 +113,10 @@ const elements = {
     pendingProposals: document.getElementById('pendingProposals'),
     noProposals: document.getElementById('noProposals'),
 
+    adminToggle: document.getElementById('adminToggle'),
+    mainView: document.getElementById('mainView'),
+    adminView: document.getElementById('adminView'),
+
     contractAddress: document.getElementById('contractAddress'),
     viewContract: document.getElementById('viewContract'),
 
@@ -206,14 +210,17 @@ async function loadContractConfig(chainId = null) {
 
 function initializeParticles() {
     const particles = document.getElementById('particles');
+    const colors = ['#FFA4A4', '#FFBDBD', '#FEEAC9'];
     for (let i = 0; i < 50; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
+        const color = colors[Math.floor(Math.random() * colors.length)];
         particle.style.cssText = `
             position: absolute;
             width: ${Math.random() * 4 + 2}px;
             height: ${Math.random() * 4 + 2}px;
-            background: rgba(99, 102, 241, ${Math.random() * 0.3});
+            background: ${color};
+            opacity: ${Math.random() * 0.4 + 0.1};
             border-radius: 50%;
             left: ${Math.random() * 100}%;
             top: ${Math.random() * 100}%;
@@ -238,6 +245,12 @@ function initializeParticles() {
 function initializeEventListeners() {
     // Wallet connection
     elements.connectWallet.addEventListener('click', connectWallet);
+
+    // View Switching
+    elements.adminToggle.addEventListener('click', () => {
+        const isCurrentlyAdmin = !elements.adminView.classList.contains('hidden');
+        switchView(isCurrentlyAdmin ? 'main' : 'admin');
+    });
 
     // Donation modal
     elements.closeDonationModal.addEventListener('click', closeDonationModal);
@@ -310,7 +323,7 @@ async function connectWallet() {
         if (!isSepolia && !isLocalHardhat) {
             showToast('error', 'Wrong Network', `Please switch MetaMask to Sepolia or Hardhat Local. Current: ${network.name || 'Chain ' + network.chainId}`);
             elements.connectWallet.disabled = false;
-            elements.connectWallet.innerHTML = '<span class="btn-icon">🔗</span> Connect Wallet';
+            elements.connectWallet.innerHTML = 'Connect Wallet';
             return;
         }
 
@@ -338,6 +351,7 @@ async function connectWallet() {
 
             // Show admin panel if owner
             if (isOwner) {
+                elements.adminToggle.classList.remove('hidden');
                 elements.adminPanel.classList.remove('hidden');
             }
 
@@ -355,7 +369,7 @@ async function connectWallet() {
         console.error('Connection error:', error);
         showToast('error', 'Connection Failed', error.message);
         elements.connectWallet.disabled = false;
-        elements.connectWallet.innerHTML = '<span class="btn-icon">🔗</span> Connect Wallet';
+        elements.connectWallet.innerHTML = 'Connect Wallet';
     }
 }
 
@@ -385,6 +399,23 @@ function handleAccountsChanged(accounts) {
 
 function handleChainChanged() {
     location.reload();
+}
+
+// ============ View Switching ============
+function switchView(viewName) {
+    if (viewName === 'admin') {
+        elements.mainView.classList.add('hidden');
+        elements.adminView.classList.remove('hidden');
+        elements.adminToggle.classList.add('active');
+        elements.adminToggle.innerHTML = '<span class="btn-icon">🏠</span> Back Home';
+        window.scrollTo(0, 0);
+    } else {
+        elements.mainView.classList.remove('hidden');
+        elements.adminView.classList.add('hidden');
+        elements.adminToggle.classList.remove('active');
+        elements.adminToggle.innerHTML = 'Go to Admin';
+        window.scrollTo(0, 0);
+    }
 }
 
 // ============ Data Loading ============
@@ -624,7 +655,6 @@ function renderHistory(donations) {
 
         return `
             <div class="history-item">
-                <div class="history-icon">💎</div>
                 <div class="history-details">
                     <div class="history-main">
                         <span class="history-donor">${shortenAddress(donation.donor)}</span>
@@ -736,7 +766,7 @@ async function confirmDonation() {
         showToast('error', 'Donation Failed', error.reason || error.message);
     } finally {
         elements.confirmDonation.disabled = false;
-        elements.confirmDonation.innerHTML = '<span class="btn-icon">💎</span> Confirm Donation';
+        elements.confirmDonation.innerHTML = 'Confirm Donation';
     }
 }
 
