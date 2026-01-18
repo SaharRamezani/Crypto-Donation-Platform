@@ -10,3 +10,4 @@
 - [] Multi-admin or DAO governance
 - [] ERC20 donation support
 - [] How should we assign the icons to the charities?
+- [] Admin pannel should be in another page
