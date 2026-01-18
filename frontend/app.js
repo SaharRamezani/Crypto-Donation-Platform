@@ -76,6 +76,7 @@ let contract = null;
 let userAddress = null;
 let isOwner = false;
 let charities = [];
+let currentTheme = 'light';
 
 // ============ DOM Elements ============
 const elements = {
@@ -120,12 +121,14 @@ const elements = {
     contractAddress: document.getElementById('contractAddress'),
     viewContract: document.getElementById('viewContract'),
 
+    themeToggle: document.getElementById('themeToggle'),
     toastContainer: document.getElementById('toastContainer')
 };
 
 // ============ Initialization ============
 document.addEventListener('DOMContentLoaded', async () => {
     initializeParticles();
+    initializeTheme();
     initializeEventListeners();
     await loadContractConfig();
 
@@ -210,16 +213,14 @@ async function loadContractConfig(chainId = null) {
 
 function initializeParticles() {
     const particles = document.getElementById('particles');
-    const colors = ['#FFA4A4', '#FFBDBD', '#FEEAC9'];
     for (let i = 0; i < 50; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
-        const color = colors[Math.floor(Math.random() * colors.length)];
         particle.style.cssText = `
             position: absolute;
             width: ${Math.random() * 4 + 2}px;
             height: ${Math.random() * 4 + 2}px;
-            background: ${color};
+            background: var(--particle-color);
             opacity: ${Math.random() * 0.4 + 0.1};
             border-radius: 50%;
             left: ${Math.random() * 100}%;
@@ -251,6 +252,9 @@ function initializeEventListeners() {
         const isCurrentlyAdmin = !elements.adminView.classList.contains('hidden');
         switchView(isCurrentlyAdmin ? 'main' : 'admin');
     });
+
+    // Theme toggle
+    elements.themeToggle.addEventListener('click', toggleTheme);
 
     // Donation modal
     elements.closeDonationModal.addEventListener('click', closeDonationModal);
@@ -416,6 +420,42 @@ function switchView(viewName) {
         elements.adminToggle.innerHTML = 'Go to Admin';
         window.scrollTo(0, 0);
     }
+}
+
+// ============ Theme Management ============
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (savedTheme) {
+        currentTheme = savedTheme;
+    } else if (prefersDark) {
+        currentTheme = 'dark';
+    } else {
+        currentTheme = 'light';
+    }
+
+    applyTheme(currentTheme);
+}
+
+function toggleTheme() {
+    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+    localStorage.setItem('theme', currentTheme);
+    applyTheme(currentTheme);
+
+    // Add a little rotation effect to the button icon
+    const svg = elements.themeToggle.querySelector('svg:not([style*="display: none"])');
+    if (svg) {
+        svg.style.transform = 'rotate(20deg)';
+        setTimeout(() => {
+            svg.style.transform = '';
+        }, 200);
+    }
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    // document.body is also common, but :root/html is safer for variables
 }
 
 // ============ Data Loading ============
