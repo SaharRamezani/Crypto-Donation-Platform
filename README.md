@@ -404,6 +404,26 @@ Instead of the contract automatically "pushing" (sending) donations to a charity
 2. A green **"Withdraw Funds"** panel will appear on your charity card.
 3. Click the button and confirm the transaction to claim your ETH.
 
+---
+
+## Troubleshooting
+
+### MetaMask Caching & Nonce Issues
+If you restart your local Hardhat node, MetaMask will still remember the "old" state of the blockchain. This leads to **nonce mismatches** and silent failures where buttons don't react or transactions never appear.
+
+**Fix:**
+1. Open **MetaMask**.
+2. Go to **Settings** → **Advanced**.
+3. Click **"Clear activity tab data"** (or "Reset Account").
+4. This clears the transaction history for the current network and syncs MetaMask with the fresh Hardhat node.
+
+### "GoChain Testnet" Warning
+When adding the local network (ID `31337`), MetaMask may suggest the name **"GoChain Testnet"**. 
+- **Cause**: This is a known collision between Hardhat's default ID and a legacy testnet.
+- **Action**: You can safely ignore this. Simply name the network "Hardhat Local" and proceed.
+
+---
+
 ## Technology Stack
 
 - **Smart Contract**: Solidity ^0.8.22 (Upgradeable)
