@@ -7,10 +7,11 @@ A decentralized application (dApp) for donating Sepolia ETH to charitable organi
 - **Donate ETH** - Send Sepolia ETH directly to verified charities
 - **Pre-loaded Charities** - 5 initial charities ready for donations
 - **Propose Charities** - Anyone can propose new charities for approval
-- **Admin Controls** - Contract owner can approve/reject charity proposals
+- **Multi-admin Governance** - Multiple administrators can manage proposals and contract settings
+- **Upgradeable Contract** - Proxy-based architecture allowing for safe contract upgrades
 - **Leaderboard** - Track top donors on the platform
 - **Transaction History** - View all donations via events
-- **Security** - Reentrancy protection and access control
+- **Security** - Reentrancy protection, AccessControl (Roles), and UUPS Proxy
 
 ## Project Structure
 
@@ -24,9 +25,11 @@ Crypto-Donation-Platform/
 │   ├── app.js                   # ethers.js integration
 │   └── contract-abi.json        # Contract ABI
 ├── scripts/
-│   └── deploy.js                # Deployment script
+│   ├── deploy_proxy.js          # Deploys the initial proxy
+│   └── upgrade_contract.js      # Upgrades the implementation
+├── deployments/                 # Deployment records and proxy addresses
 ├── test/
-│   └── CharityDonation.test.js  # Contract tests
+│   └── CharityDonation.test.js  # Contract tests (updated for Proxy)
 ├── hardhat.config.js            # Hardhat configuration
 ├── package.json                 # Node.js dependencies
 └── .env.example                 # Environment template
@@ -74,8 +77,8 @@ docker compose up --build
 
 #### Step 2: Add Hardhat Network to MetaMask
 
-1. Open MetaMask → Click network dropdown → **Add Network**
-2. Click **"Add a network manually"**
+1. Open MetaMask → Click on the three horizontal lines → **Networks**
+2. Click **"Add a custom network"**
 3. Enter these settings:
 
 | Field | Value |
@@ -97,7 +100,7 @@ Hardhat provides pre-funded test accounts. Import one into MetaMask:
    Private Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
    ```
 
-2. In MetaMask → Click account icon → **Import Account**
+2. In MetaMask → Click account → **Add wallet**
 3. Paste the private key (without `0x` prefix)
 4. Click **Import**
 
@@ -233,12 +236,17 @@ npm install
 # Compile contracts
 npx hardhat compile
 
-# Deploy to Sepolia
-npx hardhat run scripts/deploy.js --network sepolia
+# Deploy the initial proxy to Sepolia
+npx hardhat run scripts/deploy_proxy.js --network sepolia
 
-# To verify the contract on Etherscan, run:
-# Replace <contract_address> with the actual contract address: 0x586a3D92D10C37B69500D7c2Bb540e53Af1BD3ed
-npx hardhat verify --network sepolia <contract_address>
+# To verify the implementation on Etherscan:
+npx hardhat verify --network sepolia <implementation_address>
+```
+
+#### Upgrading the Contract
+If you've modified the contract and want to upgrade:
+```bash
+npx hardhat run scripts/upgrade_contract.js --network sepolia
 ```
 
 #### Step 6: Switch MetaMask to Sepolia Network
@@ -322,6 +330,33 @@ When deploying to a **Public Network (Sepolia)**:
 
 ---
 
+## Governance & Multi-admin
+
+The platform uses OpenZeppelin's **AccessControl** for decentralized governance. Instead of a single "Owner", the contract defines roles that can be held by multiple addresses simultaneously.
+
+### Admin Roles
+- **`DEFAULT_ADMIN_ROLE`**: The "super-admin" role. Can grant and revoke any role, including itself. By default, the deployer is the first super-admin.
+- **`ADMIN_ROLE`**: Can approve/reject charity proposals, toggle charity status, and authorize contract upgrades.
+
+### How to Add Multiple Admins
+To grant administrative power to another wallet, an existing super-admin must call the `grantRole` function:
+
+1. **Via Hardhat/Script**:
+   ```javascript
+   const ADMIN_ROLE = ethers.keccak256(ethers.toUtf8Bytes("ADMIN_ROLE"));
+   await charityDonation.grantRole(ADMIN_ROLE, "0xNEW_ADMIN_ADDRESS");
+   ```
+2. **Via Etherscan**: If verified, go to the "Contract" tab -> "Write as Proxy" -> `grantRole`.
+
+### Signing Transactions
+In this project, "Multi-admin" means that **any authorized admin** can sign and execute administrative transactions using their own MetaMask wallet. 
+
+- When an admin connects to the frontend, the "Admin Panel" becomes accessible.
+- Each admin uses their own private key to sign the transaction (e.g., approving a charity).
+- For higher security (requiring multiple signatures for a single action), you can set a **Gnosis Safe** or similar multi-sig wallet as the `ADMIN_ROLE` holder.
+
+---
+
 ## Smart Contract
 
 ### CharityDonation.sol
@@ -349,7 +384,8 @@ When deploying to a **Public Network (Sepolia)**:
 
 - **Reentrancy Guard** - Prevents reentrancy attacks
 - **Checks-Effects-Interactions** - State updates before external calls
-- **Access Control** - `onlyOwner` modifier for admin functions
+- **Access Control** - `ADMIN_ROLE` and `DEFAULT_ADMIN_ROLE` for granular permissions
+- **UUPS Proxy** - Universal Upgradeable Proxy Standard for secure upgrades
 
 ### Charity Withdrawals (Pull over Push Pattern)
 
@@ -370,8 +406,9 @@ Instead of the contract automatically "pushing" (sending) donations to a charity
 
 ## Technology Stack
 
-- **Smart Contract**: Solidity ^0.8.19
-- **Development**: Hardhat
+- **Smart Contract**: Solidity ^0.8.22 (Upgradeable)
+- **Development**: Hardhat + OpenZeppelin Upgrades
 - **Frontend**: HTML, CSS, JavaScript
-- **Blockchain Interaction**: ethers.js v5.7
+- **Blockchain Interaction**: ethers.js v6 (Updated)
+- **Governance**: Multi-admin AccessControl
 - **Network**: Ethereum Sepolia Testnet

@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { ethers } = require("hardhat");
+const { ethers, upgrades } = require("hardhat");
 
 describe("CharityDonation", function () {
     let charityDonation;
@@ -12,13 +12,17 @@ describe("CharityDonation", function () {
         [owner, donor1, donor2, charityWallet] = await ethers.getSigners();
 
         const CharityDonation = await ethers.getContractFactory("CharityDonation");
-        charityDonation = await CharityDonation.deploy();
+        charityDonation = await upgrades.deployProxy(CharityDonation, [], {
+            initializer: "initialize",
+            kind: "uups"
+        });
         await charityDonation.waitForDeployment();
     });
 
     describe("Deployment", function () {
-        it("Should set the correct owner", async function () {
-            expect(await charityDonation.owner()).to.equal(owner.address);
+        it("Should set the correct admin role", async function () {
+            const ADMIN_ROLE = await charityDonation.ADMIN_ROLE();
+            expect(await charityDonation.hasRole(ADMIN_ROLE, owner.address)).to.be.true;
         });
 
         it("Should initialize with 5 pre-defined charities", async function () {
@@ -116,9 +120,9 @@ describe("CharityDonation", function () {
             expect(await charityDonation.charityCount()).to.equal(5);
         });
 
-        it("Should prevent non-owners from approving", async function () {
+        it("Should prevent non-admins from approving", async function () {
             await expect(charityDonation.connect(donor1).approveCharity(1))
-                .to.be.revertedWith("Only owner can call this function");
+                .to.be.revertedWith("Caller is not an admin");
         });
 
         it("Should prevent double processing of proposals", async function () {
@@ -149,7 +153,7 @@ describe("CharityDonation", function () {
             })).to.be.revertedWith("Please use the donate function");
         });
 
-        it("Should check owner correctly", async function () {
+        it("Should check admin correctly", async function () {
             expect(await charityDonation.isOwner(owner.address)).to.be.true;
             expect(await charityDonation.isOwner(donor1.address)).to.be.false;
         });

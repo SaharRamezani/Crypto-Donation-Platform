@@ -1,5 +1,5 @@
-- [] Redesign the UI with a different palette
-- [] Add a dark mode toggle
+- [X] Redesign the UI with a different palette
+- [X] Add a dark mode toggle
 - [] Add a responsive layout
 - [] Add the private networks to the networks list in MetaMask and test with Hardhat
 - [X] Charity Status Toggle
@@ -7,7 +7,7 @@
 - [] Investigating the inspection errors in the browser console
 - [] How is ethers.js used to interact with the contract?
 - [] Use EnumerableSet for donors
-- [] Multi-admin or DAO governance
+- [X] Multi-admin with UUPS Proxy governance
 - [] ERC20 donation support
 - [] How should we assign the icons to the charities?
-- [] Admin pannel should be in another page
+- [X] Admin pannel should be in another page
