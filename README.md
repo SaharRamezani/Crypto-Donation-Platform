@@ -5,7 +5,7 @@ A decentralized application (dApp) for donating Sepolia ETH to charitable organi
 ## Features
 
 - **Donate ETH** - Send Sepolia ETH directly to verified charities
-- **Pre-loaded Charities** - 5 initial charities ready for donations
+- **Pre-loaded Charities** - 1 initial charity ready for donations
 - **Propose Charities** - Anyone can propose new charities for approval
 - **Multi-admin Governance** - Multiple administrators can manage proposals and contract settings
 - **Upgradeable Contract** - Proxy-based architecture allowing for safe contract upgrades
@@ -21,7 +21,7 @@ Crypto-Donation-Platform/
 │   └── CharityDonation.sol      # Main smart contract
 ├── frontend/
 │   ├── index.html               # Web interface
-│   ├── styles.css               # Premium dark theme styling
+│   ├── styles.css               # Theme styling
 │   ├── app.js                   # ethers.js integration
 │   └── contract-abi.json        # Contract ABI
 ├── scripts/

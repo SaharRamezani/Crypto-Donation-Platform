@@ -138,29 +138,9 @@ contract CharityDonation is
 
         // Initialize with pre-defined charities
         _addCharity(
-            "Red Cross",
-            "Humanitarian aid and disaster relief worldwide",
-            payable(0x1111111111111111111111111111111111111111)
-        );
-        _addCharity(
             "UNICEF",
             "Children's rights and development advocacy",
-            payable(0x2222222222222222222222222222222222222222)
-        );
-        _addCharity(
-            "Doctors Without Borders",
-            "Medical care in crisis zones",
-            payable(0x3333333333333333333333333333333333333333)
-        );
-        _addCharity(
-            "World Wildlife Fund",
-            "Conservation and environmental protection",
-            payable(0x4444444444444444444444444444444444444444)
-        );
-        _addCharity(
-            "Save the Children",
-            "Child welfare and education support",
-            payable(0x5555555555555555555555555555555555555555)
+            payable(0x1890217121689101121181911124618911017811)
         );
     }
 

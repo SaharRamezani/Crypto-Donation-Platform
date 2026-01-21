@@ -21,17 +21,8 @@ const CONFIG = {
 
     // Charity icons based on name keywords
     charityIcons: {
-        'red cross': '🏥',
         'unicef': '👶',
-        'doctors': '⚕️',
-        'wildlife': '🐾',
-        'children': '👧',
-        'food': '🍞',
-        'education': '📚',
-        'environment': '🌍',
-        'water': '💧',
-        'health': '❤️',
-        'default': '🎗️'
+        'default': '❤️'
     }
 };
 
