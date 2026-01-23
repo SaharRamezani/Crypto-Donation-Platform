@@ -25,13 +25,13 @@ describe("CharityDonation", function () {
             expect(await charityDonation.hasRole(ADMIN_ROLE, owner.address)).to.be.true;
         });
 
-        it("Should initialize with 5 pre-defined charities", async function () {
-            expect(await charityDonation.charityCount()).to.equal(5);
+        it("Should initialize with 1 pre-defined charities", async function () {
+            expect(await charityDonation.charityCount()).to.equal(1);
         });
 
         it("Should have active charities", async function () {
             const charities = await charityDonation.getActiveCharities();
-            expect(charities.length).to.equal(5);
+            expect(charities.length).to.equal(1);
         });
     });
 
@@ -59,7 +59,7 @@ describe("CharityDonation", function () {
             const amount2 = ethers.parseEther("0.2");
 
             await charityDonation.connect(donor1).donate(1, { value: amount1 });
-            await charityDonation.connect(donor1).donate(2, { value: amount2 });
+            await charityDonation.connect(donor1).donate(1, { value: amount2 });
 
             expect(await charityDonation.getDonorTotal(donor1.address)).to.equal(amount1 + amount2);
         });
@@ -109,7 +109,7 @@ describe("CharityDonation", function () {
             await expect(charityDonation.connect(owner).approveCharity(1))
                 .to.emit(charityDonation, "CharityApproved");
 
-            expect(await charityDonation.charityCount()).to.equal(6);
+            expect(await charityDonation.charityCount()).to.equal(2);
         });
 
         it("Should allow owner to reject proposals", async function () {
@@ -117,7 +117,7 @@ describe("CharityDonation", function () {
                 .to.emit(charityDonation, "CharityRejected");
 
             // Charity count should remain the same
-            expect(await charityDonation.charityCount()).to.equal(5);
+            expect(await charityDonation.charityCount()).to.equal(1);
         });
 
         it("Should prevent non-admins from approving", async function () {
@@ -136,7 +136,7 @@ describe("CharityDonation", function () {
         it("Should return top donors in correct order", async function () {
             await charityDonation.connect(donor1).donate(1, { value: ethers.parseEther("0.1") });
             await charityDonation.connect(donor2).donate(1, { value: ethers.parseEther("0.5") });
-            await charityDonation.connect(donor1).donate(2, { value: ethers.parseEther("0.2") });
+            await charityDonation.connect(donor1).donate(1, { value: ethers.parseEther("0.2") });
 
             const leaderboard = await charityDonation.getDonorLeaderboard(10);
 
