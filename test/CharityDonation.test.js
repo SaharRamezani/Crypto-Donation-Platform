@@ -130,6 +130,19 @@ describe("CharityDonation", function () {
             await expect(charityDonation.connect(owner).approveCharity(1))
                 .to.be.revertedWith("Proposal already processed");
         });
+
+        it("Should allow a newly added admin to approve proposals", async function () {
+            const ADMIN_ROLE = await charityDonation.ADMIN_ROLE();
+
+            // 1. Grant donor2 the admin role
+            await charityDonation.connect(owner).grantRole(ADMIN_ROLE, donor2.address);
+
+            // 2. donor2 should now be able to approve
+            await expect(charityDonation.connect(donor2).approveCharity(1))
+                .to.emit(charityDonation, "CharityApproved");
+
+            expect(await charityDonation.charityCount()).to.equal(2);
+        });
     });
 
     describe("Leaderboard", function () {
