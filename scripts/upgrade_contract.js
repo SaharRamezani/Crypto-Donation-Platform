@@ -26,7 +26,21 @@ async function main() {
         // If the proxy is not registered (e.g., fresh Docker environment),
         // we need to import it first using forceImport
         if (error.message.includes("is not registered")) {
-            console.log("Proxy not registered in manifest. Running forceImport...");
+            console.log("Proxy not registered in manifest. Validating implementation before forceImport...");
+            const currentImplementation = await upgrades.erc1967.getImplementationAddress(proxyAddress);
+            if (
+                deploymentInfo.implementationAddress &&
+                deploymentInfo.implementationAddress.toLowerCase() !== currentImplementation.toLowerCase()
+            ) {
+                throw new Error(
+                    `Implementation address mismatch for proxy ${proxyAddress}. ` +
+                    `Deployment file: ${deploymentInfo.implementationAddress}, ` +
+                    `on-chain: ${currentImplementation}. Aborting forceImport.`
+                );
+            }
+            console.log(
+                `Implementation validated (${currentImplementation}). Running forceImport...`
+            );
             const CharityDonation = await ethers.getContractFactory("CharityDonation");
             await upgrades.forceImport(proxyAddress, CharityDonation, { kind: "uups" });
             console.log("Proxy imported. Retrying upgrade...");
