@@ -1173,5 +1173,6 @@
   "network": "sepolia",
   "chainId": 11155111,
   "isProxy": true,
-  "implementation": "0x391d135Aa98Cd9465cE00C0d1DEAdBbE1b779DFD"
+  "implementation": "0x46dB2f32c60Ca32DeE1e840C2553BF20c5c133bC",
+  "version": "v2.0.0"
 }
