@@ -190,8 +190,11 @@ async function setupProvider() {
     // Initialize Debug UI from provider if available
     try {
         const network = await provider.getNetwork();
+        const chainIdHex = '0x' + network.chainId.toString(16);
+        const networkName = CONFIG.networks[chainIdHex] || network.name || 'Unknown';
+
         if (elements.debugChainId) elements.debugChainId.textContent = network.chainId;
-        if (elements.debugNetwork) elements.debugNetwork.textContent = network.name || 'Unknown';
+        if (elements.debugNetwork) elements.debugNetwork.textContent = networkName;
     } catch (e) { }
 }
 
@@ -378,9 +381,10 @@ async function connectWallet() {
         updateWalletUI(accounts[0], chainId);
 
         // Update Debug UI
+        const networkName = CONFIG.networks[chainId] || network.name || 'Unknown';
         if (elements.debugAccount) elements.debugAccount.textContent = shortenAddress(accounts[0]);
         if (elements.debugChainId) elements.debugChainId.textContent = network.chainId;
-        if (elements.debugNetwork) elements.debugNetwork.textContent = network.name || 'Unknown';
+        if (elements.debugNetwork) elements.debugNetwork.textContent = networkName;
 
         // Initialize contract if address is available
         if (CONFIG.contractAddress) {
