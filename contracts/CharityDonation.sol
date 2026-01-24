@@ -65,11 +65,11 @@ contract CharityDonation is
     mapping(uint256 => CharityProposal) public proposals;
     mapping(address => uint256) public donorTotalDonations;
     mapping(uint256 => uint256) public charityBalances; // Accumulated funds per charity
+    mapping(address => bool) private isDonor;
 
     // Arrays for iteration
     Donation[] public donationHistory;
     address[] public donorAddresses;
-    mapping(address => bool) private isDonor;
 
     // ============ Events ============
 

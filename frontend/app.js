@@ -63,7 +63,13 @@ const CONTRACT_ABI = [
     "function grantRole(bytes32 role, address account)",
     "function hasRole(bytes32 role, address account) view returns (bool)",
     "function DEFAULT_ADMIN_ROLE() view returns (bytes32)",
-    "function ADMIN_ROLE() view returns (bytes32)"
+    "function ADMIN_ROLE() view returns (bytes32)",
+
+    // V2 Functions
+    "function getVersion() view returns (string)",
+    "function contractVersion() view returns (string)",
+    "function setVersion(string memory version)",
+    "event VersionUpdated(string oldVersion, string newVersion)"
 ];
 
 const ROLES = {
@@ -135,7 +141,10 @@ const elements = {
     // Debug Elements
     debugNetwork: document.getElementById('debugNetwork'),
     debugChainId: document.getElementById('debugChainId'),
-    debugAccount: document.getElementById('debugAccount')
+    debugAccount: document.getElementById('debugAccount'),
+
+    // Version Badge
+    versionBadge: document.getElementById('versionBadge')
 };
 
 // ============ Initialization ============
@@ -585,7 +594,8 @@ async function loadAllData() {
             loadCharities(),
             loadStats(),
             loadLeaderboard(),
-            loadHistory()
+            loadHistory(),
+            loadVersion()
         ]);
 
         if (isOwner) {
@@ -594,6 +604,25 @@ async function loadAllData() {
     } catch (error) {
         console.error('Error loading data:', error);
         showToast('error', 'Load Error', 'Failed to load blockchain data');
+    }
+}
+
+async function loadVersion() {
+    if (!contract) return;
+    try {
+        const version = await contract.getVersion();
+        if (version && elements.versionBadge) {
+            elements.versionBadge.textContent = version;
+            elements.versionBadge.classList.remove('hidden');
+            console.log(`Contract Version: ${version}`);
+        }
+    } catch (error) {
+        // V1 contracts don't have getVersion, so this is expected to fail
+        console.log('Version not available (V1 contract)');
+        if (elements.versionBadge) {
+            elements.versionBadge.textContent = 'v1.0.0';
+            elements.versionBadge.classList.remove('hidden');
+        }
     }
 }
 
