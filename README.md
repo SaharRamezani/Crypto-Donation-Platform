@@ -98,6 +98,8 @@ npm run upgrade:local
 npm run upgrade:sepolia
 ```
 
+When you move from Hardhat to Sepolia, you need to modify the .env file and change the private key, Metasmask network, clear the cache, and refresh the page.
+
 ### What the Upgrade Script Does
 
 1. **Loads the existing proxy address** from `deployments/`
