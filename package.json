@@ -7,10 +7,14 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy:local": "hardhat run scripts/deploy_proxy.js --network localhost",
+    "deploy:docker": "hardhat run scripts/deploy_proxy.js --network docker",
     "deploy:sepolia": "hardhat run scripts/deploy_proxy.js --network sepolia",
     "upgrade:local": "hardhat run scripts/upgrade_contract.js --network localhost",
+    "upgrade:docker": "hardhat run scripts/upgrade_contract.js --network docker",
     "upgrade:sepolia": "hardhat run scripts/upgrade_contract.js --network sepolia",
-    "node": "hardhat node"
+    "clean:docker": "rm -rf deployments/docker_proxy.json",
+    "reset:docker": "docker compose down && npm run clean:docker && docker compose up -d",
+    "node": "hardhat node --hostname 0.0.0.0"
   },
   "keywords": [
     "ethereum",

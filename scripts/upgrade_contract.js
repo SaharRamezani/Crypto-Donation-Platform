@@ -18,7 +18,23 @@ async function main() {
     const CharityDonationV2 = await ethers.getContractFactory("CharityDonationV2");
 
     console.log("Upgrading CharityDonation to V2...");
-    const upgraded = await upgrades.upgradeProxy(proxyAddress, CharityDonationV2);
+
+    let upgraded;
+    try {
+        upgraded = await upgrades.upgradeProxy(proxyAddress, CharityDonationV2);
+    } catch (error) {
+        // If the proxy is not registered (e.g., fresh Docker environment),
+        // we need to import it first using forceImport
+        if (error.message.includes("is not registered")) {
+            console.log("Proxy not registered in manifest. Running forceImport...");
+            const CharityDonation = await ethers.getContractFactory("CharityDonation");
+            await upgrades.forceImport(proxyAddress, CharityDonation, { kind: "uups" });
+            console.log("Proxy imported. Retrying upgrade...");
+            upgraded = await upgrades.upgradeProxy(proxyAddress, CharityDonationV2);
+        } else {
+            throw error;
+        }
+    }
 
     await upgraded.waitForDeployment();
     const newImplementationAddress = await upgrades.erc1967.getImplementationAddress(proxyAddress);
