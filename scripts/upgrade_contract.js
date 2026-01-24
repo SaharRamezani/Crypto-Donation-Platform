@@ -41,10 +41,15 @@ async function main() {
             console.log(
                 `Implementation validated (${currentImplementation}). Running forceImport...`
             );
-            const CharityDonation = await ethers.getContractFactory("CharityDonation");
-            await upgrades.forceImport(proxyAddress, CharityDonation, { kind: "uups" });
-            console.log("Proxy imported. Retrying upgrade...");
-            upgraded = await upgrades.upgradeProxy(proxyAddress, CharityDonationV2);
+            try {
+                const CharityDonation = await ethers.getContractFactory("CharityDonation");
+                await upgrades.forceImport(proxyAddress, CharityDonation, { kind: "uups" });
+                console.log("Proxy imported. Retrying upgrade...");
+                upgraded = await upgrades.upgradeProxy(proxyAddress, CharityDonationV2);
+            } catch (innerError) {
+                console.error("Error during proxy forceImport or retry upgrade:", innerError);
+                throw innerError;
+            }
         } else {
             throw error;
         }
