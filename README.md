@@ -81,6 +81,8 @@ docker compose down
 | `npm run upgrade:local` | Upgrade to V2 on localhost |
 | `npm run upgrade:docker` | Upgrade to V2 inside Docker |
 | `npm run upgrade:sepolia` | Upgrade to V2 on Sepolia |
+| `npm run clean:docker` | Remove project Docker containers, images, and volumes |
+| `npm run reset:docker` | Fully reset the Docker environment and redeploy |
 
 ---
 
