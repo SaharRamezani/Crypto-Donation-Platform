@@ -18,9 +18,32 @@ async function main() {
     const CharityDonationV2 = await ethers.getContractFactory("CharityDonationV2");
 
     console.log("Upgrading CharityDonation to V2...");
-    const upgraded = await upgrades.upgradeProxy(proxyAddress, CharityDonationV2);
+
+    let upgraded;
+    try {
+        upgraded = await upgrades.upgradeProxy(proxyAddress, CharityDonationV2);
+    } catch (error) {
+        // If the proxy is not registered (e.g., fresh environment or different machine),
+        // we need to import it first using forceImport
+        if (error.message.includes("is not registered")) {
+            console.log("Proxy not registered in manifest. Running forceImport...");
+            const CharityDonation = await ethers.getContractFactory("CharityDonation");
+            await upgrades.forceImport(proxyAddress, CharityDonation, { kind: "uups" });
+            console.log("Proxy imported. Retrying upgrade...");
+            upgraded = await upgrades.upgradeProxy(proxyAddress, CharityDonationV2);
+        } else {
+            throw error;
+        }
+    }
 
     await upgraded.waitForDeployment();
+
+    // On public networks like Sepolia, wait a bit longer for the state to propagate
+    if (network.name === "sepolia") {
+        console.log("Waiting for Sepolia network confirmations...");
+        await new Promise(resolve => setTimeout(resolve, 10000)); // 10 second wait
+    }
+
     const newImplementationAddress = await upgrades.erc1967.getImplementationAddress(proxyAddress);
 
     // Verify upgrade by calling V2-specific function

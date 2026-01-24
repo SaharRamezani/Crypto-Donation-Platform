@@ -337,6 +337,25 @@
       "type": "event"
     },
     {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "oldVersion",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "newVersion",
+          "type": "string"
+        }
+      ],
+      "name": "VersionUpdated",
+      "type": "event"
+    },
+    {
       "stateMutability": "payable",
       "type": "fallback"
     },
@@ -463,6 +482,19 @@
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "contractVersion",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
         }
       ],
       "stateMutability": "view",
@@ -817,6 +849,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "getVersion",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "bytes32",
@@ -1034,6 +1079,19 @@
     {
       "inputs": [
         {
+          "internalType": "string",
+          "name": "_version",
+          "type": "string"
+        }
+      ],
+      "name": "setVersion",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "bytes4",
           "name": "interfaceId",
           "type": "bytes4"
@@ -1115,5 +1173,6 @@
   "network": "sepolia",
   "chainId": 11155111,
   "isProxy": true,
-  "implementation": "0x391d135Aa98Cd9465cE00C0d1DEAdBbE1b779DFD"
+  "implementation": "0x46dB2f32c60Ca32DeE1e840C2553BF20c5c133bC",
+  "version": "v2.0.0"
 }
