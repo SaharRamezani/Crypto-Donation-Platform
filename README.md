@@ -76,9 +76,13 @@ docker compose down
 | `npm run test` | Run all tests (V1 + V2) |
 | `npm run node` | Start a local Hardhat node |
 | `npm run deploy:local` | Deploy V1 proxy to localhost |
+| `npm run deploy:docker` | Deploy V1 proxy inside Docker |
 | `npm run deploy:sepolia` | Deploy V1 proxy to Sepolia |
 | `npm run upgrade:local` | Upgrade to V2 on localhost |
+| `npm run upgrade:docker` | Upgrade to V2 inside Docker |
 | `npm run upgrade:sepolia` | Upgrade to V2 on Sepolia |
+| `npm run clean:docker` | Remove project Docker containers, images, and volumes |
+| `npm run reset:docker` | Fully reset the Docker environment and redeploy |
 
 ---
 
@@ -93,6 +97,9 @@ To upgrade an existing V1 deployment to V2:
 ```bash
 # Local Hardhat
 npm run upgrade:local
+
+# Inside the docker container
+docker compose run --rm deployer npm run upgrade:docker
 
 # Sepolia Testnet
 npm run upgrade:sepolia
@@ -121,6 +128,15 @@ When you move from Hardhat to Sepolia, you need to modify the .env file and chan
 - **Admin Required**: Only addresses with `ADMIN_ROLE` can authorize upgrades
 - **Data Preserved**: All donations, charities, and proposals remain intact
 - **Same Address**: Users continue using the same proxy address
+
+### Reset Project (Start Fresh)
+
+If you ever see errors like "Deployment not registered" or "doesn't look like an ERC 1967 proxy", it usually means your local files are out of sync with a fresh blockchain. You can start completely fresh with:
+
+```bash
+npm run reset:docker
+```
+*Note: This wipes all local donations and charity proposals.*
 
 ---
 

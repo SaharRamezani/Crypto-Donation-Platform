@@ -23,14 +23,33 @@ async function main() {
     try {
         upgraded = await upgrades.upgradeProxy(proxyAddress, CharityDonationV2);
     } catch (error) {
-        // If the proxy is not registered (e.g., fresh environment or different machine),
+        // If the proxy is not registered (e.g., fresh Docker environment),
         // we need to import it first using forceImport
         if (error.message.includes("is not registered")) {
-            console.log("Proxy not registered in manifest. Running forceImport...");
-            const CharityDonation = await ethers.getContractFactory("CharityDonation");
-            await upgrades.forceImport(proxyAddress, CharityDonation, { kind: "uups" });
-            console.log("Proxy imported. Retrying upgrade...");
-            upgraded = await upgrades.upgradeProxy(proxyAddress, CharityDonationV2);
+            console.log("Proxy not registered in manifest. Validating implementation before forceImport...");
+            const currentImplementation = await upgrades.erc1967.getImplementationAddress(proxyAddress);
+            if (
+                deploymentInfo.implementationAddress &&
+                deploymentInfo.implementationAddress.toLowerCase() !== currentImplementation.toLowerCase()
+            ) {
+                throw new Error(
+                    `Implementation address mismatch for proxy ${proxyAddress}. ` +
+                    `Deployment file: ${deploymentInfo.implementationAddress}, ` +
+                    `on-chain: ${currentImplementation}. Aborting forceImport.`
+                );
+            }
+            console.log(
+                `Implementation validated (${currentImplementation}). Running forceImport...`
+            );
+            try {
+                const CharityDonation = await ethers.getContractFactory("CharityDonation");
+                await upgrades.forceImport(proxyAddress, CharityDonation, { kind: "uups" });
+                console.log("Proxy imported. Retrying upgrade...");
+                upgraded = await upgrades.upgradeProxy(proxyAddress, CharityDonationV2);
+            } catch (innerError) {
+                console.error("Error during proxy forceImport or retry upgrade:", innerError);
+                throw innerError;
+            }
         } else {
             throw error;
         }

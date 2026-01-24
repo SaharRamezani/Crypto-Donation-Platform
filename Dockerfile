@@ -36,7 +36,7 @@ COPY hardhat.config.js ./
 EXPOSE 8545
 
 # Start Hardhat node
-CMD ["npx", "hardhat", "node", "--hostname", "0.0.0.0"]
+CMD ["npm", "run", "node"]
 
 # Stage 3: Frontend with nginx
 FROM nginx:alpine AS frontend
