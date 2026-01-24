@@ -13,7 +13,7 @@
     "upgrade:docker": "hardhat run scripts/upgrade_contract.js --network docker",
     "upgrade:sepolia": "hardhat run scripts/upgrade_contract.js --network sepolia",
     "clean:docker": "rm -rf deployments/docker_proxy.json",
-    "reset:docker": "docker compose down && npm run clean:docker && docker compose up -d",
+    "reset:docker": "docker compose down || true; npm run clean:docker; docker compose up -d --wait",
     "node": "hardhat node --hostname 0.0.0.0"
   },
   "keywords": [
