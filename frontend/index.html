@@ -22,22 +22,31 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <span class="logo-icon">💎</span>
-                <span class="logo-text">CryptoDonate</span>
+                <img src="icon.png" class="logo-icon" alt="Sarita Logo">
+                <span class="logo-text">Sarita</span>
             </div>
-            <div class="nav-links">
-                <a href="#charities" class="nav-link">Charities</a>
-                <a href="#leaderboard" class="nav-link">Leaderboard</a>
-                <a href="#history" class="nav-link">History</a>
-                <a href="#propose" class="nav-link">Propose</a>
-            </div>
+            <!-- Navigation Links Removed -->
             <div class="wallet-section">
                 <div id="networkBadge" class="network-badge hidden">
                     <span class="network-dot"></span>
                     <span id="networkName">Sepolia</span>
                 </div>
+                <!-- Theme Toggle -->
+                <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.95 16.95l.707.707M7.05 7.05l.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12.293 2.293a1 1 0 01.002 1.414 7 7 0 009 9 1 1 0 011.414 1.414 11 11 0 11-11.83-11.83 1 1 0 011.414.002z" />
+                    </svg>
+                </button>
+                <button id="adminToggle" class="btn admin-toggle-btn hidden">
+                    Go to Admin
+                </button>
                 <button id="connectWallet" class="btn btn-primary">
-                    <span class="btn-icon">🔗</span>
                     Connect Wallet
                 </button>
                 <div id="walletInfo" class="wallet-info hidden">
@@ -48,223 +57,217 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1 class="hero-title">
-                <span class="gradient-text">Transparent Giving</span>
-                <br>On The Blockchain
-            </h1>
-            <p class="hero-subtitle">
-                Donate Sepolia ETH directly to verified charitable organizations.
-                Every transaction is recorded immutably on the Ethereum blockchain.
-            </p>
-            <div class="hero-stats">
-                <div class="stat-card">
-                    <span class="stat-value" id="totalDonated">0.00</span>
-                    <span class="stat-label">ETH Donated</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-value" id="totalCharities">0</span>
-                    <span class="stat-label">Charities</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-value" id="totalDonors">0</span>
-                    <span class="stat-label">Donors</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Charities Section -->
-    <section id="charities" class="section">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">🏛️ Verified Charities</h2>
-                <p class="section-subtitle">Select a charity to make your donation</p>
-            </div>
-            <div id="charitiesGrid" class="charities-grid">
-                <!-- Charities will be loaded dynamically -->
-                <div class="loading-skeleton">
-                    <div class="skeleton-card"></div>
-                    <div class="skeleton-card"></div>
-                    <div class="skeleton-card"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Donation Modal -->
-    <div id="donationModal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeDonationModal">&times;</button>
-            <div class="modal-header">
-                <span class="modal-icon">💝</span>
-                <h3 class="modal-title">Make a Donation</h3>
-            </div>
-            <div class="modal-body">
-                <div class="selected-charity">
-                    <span class="charity-label">Donating to:</span>
-                    <span id="selectedCharityName" class="charity-name-display"></span>
-                </div>
-                <div class="form-group">
-                    <label for="donationAmount">Amount (ETH)</label>
-                    <div class="input-with-icon">
-                        <input type="number" id="donationAmount" placeholder="0.01" step="0.001" min="0.001">
-                        <span class="input-icon">Ξ</span>
+    <main id="mainView" class="view-container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="gradient-text">Trust no one</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Donate directly to charitable organizations
+                </p>
+                <div class="hero-stats">
+                    <div class="stat-card">
+                        <span class="stat-value" id="totalDonated">0.00</span>
+                        <span class="stat-label">ETH Donated</span>
                     </div>
-                    <div class="quick-amounts">
-                        <button class="quick-amount" data-amount="0.01">0.01 ETH</button>
-                        <button class="quick-amount" data-amount="0.05">0.05 ETH</button>
-                        <button class="quick-amount" data-amount="0.1">0.1 ETH</button>
-                        <button class="quick-amount" data-amount="0.5">0.5 ETH</button>
+                    <div class="stat-card">
+                        <span class="stat-value" id="totalCharities">0</span>
+                        <span class="stat-label">Charities</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="totalDonors">0</span>
+                        <span class="stat-label">Donors</span>
                     </div>
                 </div>
-                <button id="confirmDonation" class="btn btn-primary btn-full">
-                    <span class="btn-icon">💎</span>
-                    Confirm Donation
-                </button>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- MetaMask Install Modal -->
-    <div id="installModal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeInstallModal">&times;</button>
-            <div class="modal-header">
-                <span class="modal-icon">🦊</span>
-                <h3 class="modal-title">MetaMask Required</h3>
-            </div>
-            <div class="modal-body">
-                <p class="modal-description">To interact with the blockchain and make donations, you need to install the
-                    MetaMask wallet extension.</p>
-                <div class="install-buttons">
-                    <a href="https://addons.mozilla.org/en-US/firefox/addon/ether-metamask/" target="_blank"
-                        class="btn btn-install btn-firefox">
-                        <span class="btn-icon">🦊</span>
-                        Install for Firefox
-                    </a>
-                    <a href="https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn"
-                        target="_blank" class="btn btn-install btn-chrome">
-                        <span class="btn-icon">🌐</span>
-                        Install for Chrome
-                    </a>
+        <!-- Charities Section -->
+        <section id="charities" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Verified Charities</h2>
+                    <p class="section-subtitle">Select a charity to make your donation</p>
                 </div>
-                <p class="install-note">After installing, refresh this page to connect your wallet.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Leaderboard Section -->
-    <section id="leaderboard" class="section section-alt">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">🏆 Top Donors</h2>
-                <p class="section-subtitle">Celebrating our most generous contributors</p>
-            </div>
-            <div class="leaderboard-container">
-                <table class="leaderboard-table">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Donor</th>
-                            <th>Total Donated</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboardBody">
-                        <!-- Leaderboard entries will be loaded dynamically -->
-                    </tbody>
-                </table>
-                <div id="leaderboardEmpty" class="empty-state">
-                    <span class="empty-icon">📊</span>
-                    <p>No donations yet. Be the first!</p>
+                <div id="charitiesGrid" class="charities-grid">
+                    <!-- Charities will be loaded dynamically -->
+                    <div class="loading-skeleton">
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                        <div class="skeleton-card"></div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Transaction History Section -->
-    <section id="history" class="section">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">📜 Recent Donations</h2>
-                <p class="section-subtitle">Live feed of all donations on the platform</p>
-            </div>
-            <div class="history-container">
-                <div id="historyList" class="history-list">
-                    <!-- Transaction history will be loaded dynamically -->
+        <!-- Donation Modal -->
+        <div id="donationModal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close" id="closeDonationModal">&times;</button>
+                <div class="modal-header">
+                    <span class="modal-icon">💝</span>
+                    <h3 class="modal-title">Make a Donation</h3>
                 </div>
-                <div id="historyEmpty" class="empty-state">
-                    <span class="empty-icon">🕐</span>
-                    <p>No transactions yet</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Propose Charity Section -->
-    <section id="propose" class="section section-alt">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">✨ Propose a Charity</h2>
-                <p class="section-subtitle">Submit a new charity for admin approval</p>
-            </div>
-            <div class="propose-form-container">
-                <form id="proposeForm" class="propose-form">
-                    <div class="form-group">
-                        <label for="charityName">Charity Name</label>
-                        <input type="text" id="charityName" placeholder="e.g., Local Food Bank" required>
+                <div class="modal-body">
+                    <div class="selected-charity">
+                        <span class="charity-label">Donating to:</span>
+                        <span id="selectedCharityName" class="charity-name-display"></span>
                     </div>
                     <div class="form-group">
-                        <label for="charityDescription">Description</label>
-                        <textarea id="charityDescription" placeholder="Describe the charity's mission..." rows="3"
-                            required></textarea>
+                        <label for="donationAmount">Amount (ETH)</label>
+                        <div class="input-with-icon">
+                            <input type="number" id="donationAmount" placeholder="0.01" step="0.001" min="0.001">
+                            <span class="input-icon">Ξ</span>
+                        </div>
+                        <div class="quick-amounts">
+                            <button class="quick-amount" data-amount="0.01">0.01 ETH</button>
+                            <button class="quick-amount" data-amount="0.05">0.05 ETH</button>
+                            <button class="quick-amount" data-amount="0.1">0.1 ETH</button>
+                            <button class="quick-amount" data-amount="0.5">0.5 ETH</button>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="charityWallet">Wallet Address</label>
-                        <input type="text" id="charityWallet" placeholder="0x..." pattern="^0x[a-fA-F0-9]{40}$"
-                            required>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-full">
-                        <span class="btn-icon">📝</span>
-                        Submit Proposal
+                    <button id="confirmDonation" class="btn btn-primary btn-full">
+                        Confirm Donation
                     </button>
-                </form>
+                </div>
             </div>
         </div>
-    </section>
 
-    <!-- Admin Panel (Owner Only) -->
-    <section id="adminPanel" class="section admin-section hidden">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">🔐 Admin Panel</h2>
-                <p class="section-subtitle">Manage charity proposals</p>
-            </div>
-            <div class="admin-container">
-                <div id="pendingProposals" class="proposals-grid">
-                    <!-- Pending proposals will be loaded dynamically -->
+        <!-- MetaMask Install Modal -->
+        <div id="installModal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close" id="closeInstallModal">&times;</button>
+                <div class="modal-header">
+                    <span class="modal-icon">🦊</span>
+                    <h3 class="modal-title">MetaMask Required</h3>
                 </div>
-                <div id="noProposals" class="empty-state">
-                    <span class="empty-icon">✅</span>
-                    <p>No pending proposals</p>
+                <div class="modal-body">
+                    <p class="modal-description">To interact with the blockchain and make donations, you need to install
+                        the
+                        MetaMask wallet extension.</p>
+                    <div class="install-buttons">
+                        <a href="https://addons.mozilla.org/en-US/firefox/addon/ether-metamask/" target="_blank"
+                            class="btn btn-install btn-firefox">
+                            <span class="btn-icon">🦊</span>
+                            Install for Firefox
+                        </a>
+                        <a href="https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn"
+                            target="_blank" class="btn btn-install btn-chrome">
+                            <span class="btn-icon">🌐</span>
+                            Install for Chrome
+                        </a>
+                    </div>
+                    <p class="install-note">After installing, refresh this page to connect your wallet.</p>
                 </div>
             </div>
         </div>
-    </section>
+
+        <!-- Leaderboard Section -->
+        <section id="leaderboard" class="section section-alt">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">🏆 Top Donors</h2>
+                </div>
+                <div class="leaderboard-container">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Donor</th>
+                                <th>Total Donated</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody">
+                            <!-- Leaderboard entries will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                    <div id="leaderboardEmpty" class="empty-state">
+                        <span class="empty-icon">📊</span>
+                        <p>No donations yet. Be the first!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Transaction History Section -->
+        <section id="history" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Recent Donations</h2>
+                </div>
+                <div class="history-container">
+                    <div id="historyList" class="history-list">
+                        <!-- Transaction history will be loaded dynamically -->
+                    </div>
+                    <div id="historyEmpty" class="empty-state">
+                        <span class="empty-icon">🕐</span>
+                        <p>No transactions yet</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Propose Charity Section -->
+        <section id="propose" class="section section-alt">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Propose a Charity</h2>
+                    <p class="section-subtitle">Submit a new charity for admin approval</p>
+                </div>
+                <div class="propose-form-container">
+                    <form id="proposeForm" class="propose-form">
+                        <div class="form-group">
+                            <label for="charityName">Charity Name</label>
+                            <input type="text" id="charityName" placeholder="e.g., Local Food Bank" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="charityDescription">Description</label>
+                            <textarea id="charityDescription" placeholder="Describe the charity's mission..." rows="3"
+                                required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="charityWallet">Wallet Address</label>
+                            <input type="text" id="charityWallet" placeholder="0x..." pattern="^0x[a-fA-F0-9]{40}$"
+                                required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">
+                            Submit Proposal
+                        </button>
+                    </form>
+                </div>
+            </div>
+    </main>
+
+    <!-- Admin View (Moved to separate container) -->
+    <div id="adminView" class="view-container hidden">
+        <div class="container">
+        </div>
+
+        <!-- Admin Panel (Owner Only) -->
+        <section id="adminPanel" class="section hidden">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Admin Panel</h2>
+                    <p class="section-subtitle">Manage charity proposals</p>
+                </div>
+                <div class="admin-container">
+                    <div id="pendingProposals" class="proposals-grid">
+                        <!-- Pending proposals will be loaded dynamically -->
+                    </div>
+                    <div id="noProposals" class="empty-state">
+                        <p>No pending proposals</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-logo">
-                    <span class="logo-icon">💎</span>
-                    <span class="logo-text">CryptoDonate</span>
-                </div>
-                <p class="footer-text">
-                    Built on Ethereum • Powered by Smart Contracts
-                </p>
                 <div class="footer-links">
                     <a href="#" id="viewContract" class="footer-link">View Contract</a>
                     <span class="divider">•</span>

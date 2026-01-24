@@ -76,6 +76,7 @@ let contract = null;
 let userAddress = null;
 let isOwner = false;
 let charities = [];
+let currentTheme = 'light';
 
 // ============ DOM Elements ============
 const elements = {
@@ -113,15 +114,21 @@ const elements = {
     pendingProposals: document.getElementById('pendingProposals'),
     noProposals: document.getElementById('noProposals'),
 
+    adminToggle: document.getElementById('adminToggle'),
+    mainView: document.getElementById('mainView'),
+    adminView: document.getElementById('adminView'),
+
     contractAddress: document.getElementById('contractAddress'),
     viewContract: document.getElementById('viewContract'),
 
+    themeToggle: document.getElementById('themeToggle'),
     toastContainer: document.getElementById('toastContainer')
 };
 
 // ============ Initialization ============
 document.addEventListener('DOMContentLoaded', async () => {
     initializeParticles();
+    initializeTheme();
     initializeEventListeners();
     await loadContractConfig();
 
@@ -213,7 +220,8 @@ function initializeParticles() {
             position: absolute;
             width: ${Math.random() * 4 + 2}px;
             height: ${Math.random() * 4 + 2}px;
-            background: rgba(99, 102, 241, ${Math.random() * 0.3});
+            background: var(--particle-color);
+            opacity: ${Math.random() * 0.4 + 0.1};
             border-radius: 50%;
             left: ${Math.random() * 100}%;
             top: ${Math.random() * 100}%;
@@ -238,6 +246,15 @@ function initializeParticles() {
 function initializeEventListeners() {
     // Wallet connection
     elements.connectWallet.addEventListener('click', connectWallet);
+
+    // View Switching
+    elements.adminToggle.addEventListener('click', () => {
+        const isCurrentlyAdmin = !elements.adminView.classList.contains('hidden');
+        switchView(isCurrentlyAdmin ? 'main' : 'admin');
+    });
+
+    // Theme toggle
+    elements.themeToggle.addEventListener('click', toggleTheme);
 
     // Donation modal
     elements.closeDonationModal.addEventListener('click', closeDonationModal);
@@ -310,7 +327,7 @@ async function connectWallet() {
         if (!isSepolia && !isLocalHardhat) {
             showToast('error', 'Wrong Network', `Please switch MetaMask to Sepolia or Hardhat Local. Current: ${network.name || 'Chain ' + network.chainId}`);
             elements.connectWallet.disabled = false;
-            elements.connectWallet.innerHTML = '<span class="btn-icon">🔗</span> Connect Wallet';
+            elements.connectWallet.innerHTML = 'Connect Wallet';
             return;
         }
 
@@ -338,6 +355,7 @@ async function connectWallet() {
 
             // Show admin panel if owner
             if (isOwner) {
+                elements.adminToggle.classList.remove('hidden');
                 elements.adminPanel.classList.remove('hidden');
             }
 
@@ -355,7 +373,7 @@ async function connectWallet() {
         console.error('Connection error:', error);
         showToast('error', 'Connection Failed', error.message);
         elements.connectWallet.disabled = false;
-        elements.connectWallet.innerHTML = '<span class="btn-icon">🔗</span> Connect Wallet';
+        elements.connectWallet.innerHTML = 'Connect Wallet';
     }
 }
 
@@ -387,6 +405,59 @@ function handleChainChanged() {
     location.reload();
 }
 
+// ============ View Switching ============
+function switchView(viewName) {
+    if (viewName === 'admin') {
+        elements.mainView.classList.add('hidden');
+        elements.adminView.classList.remove('hidden');
+        elements.adminToggle.classList.add('active');
+        elements.adminToggle.innerHTML = '<span class="btn-icon">🏠</span> Back Home';
+        window.scrollTo(0, 0);
+    } else {
+        elements.mainView.classList.remove('hidden');
+        elements.adminView.classList.add('hidden');
+        elements.adminToggle.classList.remove('active');
+        elements.adminToggle.innerHTML = 'Go to Admin';
+        window.scrollTo(0, 0);
+    }
+}
+
+// ============ Theme Management ============
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (savedTheme) {
+        currentTheme = savedTheme;
+    } else if (prefersDark) {
+        currentTheme = 'dark';
+    } else {
+        currentTheme = 'light';
+    }
+
+    applyTheme(currentTheme);
+}
+
+function toggleTheme() {
+    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+    localStorage.setItem('theme', currentTheme);
+    applyTheme(currentTheme);
+
+    // Add a little rotation effect to the button icon
+    const svg = elements.themeToggle.querySelector('svg:not([style*="display: none"])');
+    if (svg) {
+        svg.style.transform = 'rotate(20deg)';
+        setTimeout(() => {
+            svg.style.transform = '';
+        }, 200);
+    }
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    // document.body is also common, but :root/html is safer for variables
+}
+
 // ============ Data Loading ============
 async function loadAllData() {
     if (!contract) return;
@@ -410,7 +481,9 @@ async function loadAllData() {
 async function loadCharities() {
     if (!contract) return;
     try {
-        const rawCharities = await contract.getActiveCharities();
+        // Owner should see all charities (including inactive ones for reactivation)
+        // Others only see active ones
+        const rawCharities = await (isOwner ? contract.getCharities() : contract.getActiveCharities());
 
         // Fetch balances for each charity to see what's available for withdrawal
         charities = await Promise.all(rawCharities.map(async (charity) => {
@@ -491,7 +564,7 @@ function renderCharities(charityList) {
         const hasBalance = charity.availableBalance && charity.availableBalance.gt(0);
 
         return `
-            <div class="charity-card" data-id="${charity.id}">
+            <div class="charity-card ${!charity.isActive ? 'deactivated' : ''}" data-id="${charity.id}">
                 <div class="charity-header">
                     <div class="charity-icon">${getCharityIcon(charity.name)}</div>
                     <div class="charity-info">
@@ -519,9 +592,23 @@ function renderCharities(charityList) {
                 ` : ''}
 
                 <p class="charity-wallet">Wallet: ${shortenAddress(charity.walletAddress)}</p>
-                <button class="btn btn-primary btn-full donate-btn" data-id="${charity.id}" data-name="${escapeHtml(charity.name)}">
-                    <span class="btn-icon">💝</span> Donate
-                </button>
+                
+                <div class="charity-actions">
+                    ${charity.isActive ? `
+                        <button class="btn btn-primary donate-btn" data-id="${charity.id}" data-name="${escapeHtml(charity.name)}">
+                            <span class="btn-icon">💝</span> Donate
+                        </button>
+                    ` : `
+                        <button class="btn btn-secondary btn-full" disabled>
+                            Inactive
+                        </button>
+                    `}
+                    ${isOwner ? `
+                        <button class="btn btn-outline ${charity.isActive ? 'btn-danger' : 'btn-success'} toggle-status-btn" data-id="${charity.id}">
+                            <span class="btn-icon">${charity.isActive ? '🚫' : '✅'}</span> ${charity.isActive ? 'Deactivate' : 'Activate'}
+                        </button>
+                    ` : ''}
+                </div>
             </div>
         `;
     }).join('');
@@ -534,6 +621,25 @@ function renderCharities(charityList) {
     document.querySelectorAll('.withdraw-btn').forEach(btn => {
         btn.addEventListener('click', () => withdrawFunds(btn.dataset.id));
     });
+
+    document.querySelectorAll('.toggle-status-btn').forEach(btn => {
+        btn.addEventListener('click', () => toggleCharityStatus(btn.dataset.id));
+    });
+}
+
+async function toggleCharityStatus(charityId) {
+    try {
+        showToast('info', 'Processing', 'Please confirm the status change in MetaMask...');
+
+        const tx = await contract.toggleCharityStatus(charityId);
+        await tx.wait();
+
+        showToast('success', 'Success!', 'Charity status updated successfully!');
+        loadAllData();
+    } catch (error) {
+        console.error('Toggle status error:', error);
+        showToast('error', 'Update Failed', error.reason || error.message || 'Transaction failed');
+    }
 }
 
 async function withdrawFunds(charityId) {
@@ -589,7 +695,6 @@ function renderHistory(donations) {
 
         return `
             <div class="history-item">
-                <div class="history-icon">💎</div>
                 <div class="history-details">
                     <div class="history-main">
                         <span class="history-donor">${shortenAddress(donation.donor)}</span>
@@ -701,7 +806,7 @@ async function confirmDonation() {
         showToast('error', 'Donation Failed', error.reason || error.message);
     } finally {
         elements.confirmDonation.disabled = false;
-        elements.confirmDonation.innerHTML = '<span class="btn-icon">💎</span> Confirm Donation';
+        elements.confirmDonation.innerHTML = 'Confirm Donation';
     }
 }
 
