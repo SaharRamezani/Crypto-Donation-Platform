@@ -1174,5 +1174,6 @@
   "chainId": 31337,
   "isProxy": true,
   "implementation": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
-  "version": "v2.0.0"
+  "version": "v1.0.0",
+  "note": "This file is committed as a placeholder and will be overwritten on the first 'docker compose up' when CharityDonation V1 is deployed; subsequent upgrades will regenerate it with the active implementation ABI."
 }
