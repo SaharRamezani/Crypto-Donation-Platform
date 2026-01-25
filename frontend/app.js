@@ -171,13 +171,43 @@ async function setupProvider() {
         provider = new ethers.providers.Web3Provider(window.ethereum);
     } else {
         // Fallback to read-only provider
-        // If Sepolia (11155111), use a public RPC. Otherwise assume local (8545)
-        const rpcUrl = (CONFIG.loadedChainId === 11155111)
-            ? 'https://ethereum-sepolia-rpc.publicnode.com'
-            : 'http://localhost:8545';
+        if (CONFIG.loadedChainId === 11155111) {
+            // Try multiple Sepolia RPC endpoints for browser compatibility
+            const sepoliaRpcs = [
+                'https://rpc.sepolia.org',
+                'https://1rpc.io/sepolia',
+                'https://ethereum-sepolia-rpc.publicnode.com',
+                'https://rpc2.sepolia.org'
+            ];
 
-        console.log(`No MetaMask detected. Using read-only fallback: ${rpcUrl}`);
-        provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+            for (const rpcUrl of sepoliaRpcs) {
+                try {
+                    console.log(`Trying Sepolia RPC: ${rpcUrl}`);
+                    const testProvider = new ethers.providers.JsonRpcProvider(rpcUrl);
+                    // Quick test to see if this RPC works
+                    await Promise.race([
+                        testProvider.getBlockNumber(),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+                    ]);
+                    provider = testProvider;
+                    console.log(`✅ Connected to Sepolia via: ${rpcUrl}`);
+                    break;
+                } catch (e) {
+                    console.warn(`RPC ${rpcUrl} failed:`, e.message);
+                }
+            }
+
+            // If all RPCs failed, use the first one anyway (might work for reads)
+            if (!provider) {
+                console.warn('All Sepolia RPCs failed initial test, using first one');
+                provider = new ethers.providers.JsonRpcProvider(sepoliaRpcs[0]);
+            }
+        } else {
+            // Local development
+            const rpcUrl = 'http://localhost:8545';
+            console.log(`No MetaMask detected. Using local RPC: ${rpcUrl}`);
+            provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+        }
     }
 
     // Initialize contract with the provider (read-only)
@@ -628,6 +658,8 @@ async function loadCharities() {
         renderCharities(charities);
     } catch (error) {
         console.error('Error loading charities:', error);
+        // Show empty state instead of leaving skeleton
+        renderCharities([]);
     }
 }
 
@@ -646,6 +678,10 @@ async function loadStats() {
         elements.totalDonors.textContent = leaderboard.length.toString();
     } catch (error) {
         console.error('Error loading stats:', error);
+        // Show default values on error
+        elements.totalDonated.textContent = '0.00';
+        elements.totalCharities.textContent = '0';
+        elements.totalDonors.textContent = '0';
     }
 }
 
@@ -656,6 +692,8 @@ async function loadLeaderboard() {
         renderLeaderboard(leaderboard);
     } catch (error) {
         console.error('Error loading leaderboard:', error);
+        // Show empty leaderboard
+        renderLeaderboard([]);
     }
 }
 
@@ -666,6 +704,8 @@ async function loadHistory() {
         renderHistory(donations);
     } catch (error) {
         console.error('Error loading history:', error);
+        // Show empty history
+        renderHistory([]);
     }
 }
 
