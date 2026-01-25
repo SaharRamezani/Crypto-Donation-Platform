@@ -105,8 +105,6 @@ docker compose run --rm deployer npm run upgrade:docker
 npm run upgrade:sepolia
 ```
 
-When you move from Hardhat to Sepolia, you need to modify the .env file and change the private key, Metasmask network, clear the cache, and refresh the page.
-
 ### What the Upgrade Script Does
 
 1. **Loads the existing proxy address** from `deployments/`
@@ -155,6 +153,8 @@ mv frontend/contract-abi.sepolia.json frontend/contract-abi.sepolia.json.bak
 # Start Docker (will deploy to local Hardhat)
 docker compose up --build
 ```
+
+When you move from Hardhat to Sepolia (and vice versa), you need to modify the .env file and change the private key, Metasmask network, clear the cache, and refresh the page.
 
 ### Step 2: Add Hardhat Network to MetaMask
 
