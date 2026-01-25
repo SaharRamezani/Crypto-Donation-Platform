@@ -149,7 +149,6 @@ const elements = {
 
 // ============ Initialization ============
 document.addEventListener('DOMContentLoaded', async () => {
-    initializeParticles();
     initializeTheme();
     initializeEventListeners();
     await loadContractConfig();
@@ -244,38 +243,6 @@ async function loadContractConfig(chainId = null) {
     } catch (error) {
         console.log('No contract config found, using demo mode');
     }
-}
-
-function initializeParticles() {
-    const particles = document.getElementById('particles');
-    for (let i = 0; i < 50; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.cssText = `
-            position: absolute;
-            width: ${Math.random() * 4 + 2}px;
-            height: ${Math.random() * 4 + 2}px;
-            background: var(--particle-color);
-            opacity: ${Math.random() * 0.4 + 0.1};
-            border-radius: 50%;
-            left: ${Math.random() * 100}%;
-            top: ${Math.random() * 100}%;
-            animation: float ${Math.random() * 20 + 10}s infinite ease-in-out;
-        `;
-        particles.appendChild(particle);
-    }
-
-    // Add float animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes float {
-            0%, 100% { transform: translateY(0) translateX(0); }
-            25% { transform: translateY(-20px) translateX(10px); }
-            50% { transform: translateY(-10px) translateX(-10px); }
-            75% { transform: translateY(-30px) translateX(5px); }
-        }
-    `;
-    document.head.appendChild(style);
 }
 
 function initializeEventListeners() {
