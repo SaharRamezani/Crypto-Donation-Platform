@@ -187,14 +187,23 @@ async function setupProvider() {
     }
 
     // Initialize Debug UI from provider if available
+    // Add timeout to prevent hanging if provider is unreachable
     try {
-        const network = await provider.getNetwork();
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Network detection timeout')), 5000)
+        );
+        const network = await Promise.race([provider.getNetwork(), timeoutPromise]);
         const chainIdHex = '0x' + network.chainId.toString(16);
         const networkName = CONFIG.networks[chainIdHex] || network.name || 'Unknown';
 
         if (elements.debugChainId) elements.debugChainId.textContent = network.chainId;
         if (elements.debugNetwork) elements.debugNetwork.textContent = networkName;
-    } catch (e) { }
+    } catch (e) {
+        console.warn('Could not detect network:', e.message);
+        // Set fallback debug info
+        if (elements.debugNetwork) elements.debugNetwork.textContent = 'Offline';
+        if (elements.debugChainId) elements.debugChainId.textContent = 'N/A';
+    }
 }
 
 async function loadContractConfig(chainId = null) {
@@ -207,6 +216,12 @@ async function loadContractConfig(chainId = null) {
             } catch (e) {
                 console.log('Could not detect network for config loading');
             }
+        }
+
+        // If still no chainId (no MetaMask), default to Sepolia for public access
+        if (!chainId) {
+            console.log('No wallet detected, defaulting to Sepolia config for read-only access');
+            chainId = 11155111; // Sepolia
         }
 
         // Use sepolia-specific config if we're on Sepolia
