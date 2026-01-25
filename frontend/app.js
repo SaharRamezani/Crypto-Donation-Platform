@@ -443,7 +443,7 @@ async function connectWallet() {
             setupContractEventListeners();
         } else {
             const networkName = isSepolia ? 'Sepolia' : (isLocalHardhat ? 'Hardhat' : 'this network');
-            showToast('warning', 'Not Deployed', `No contract found on ${networkName}. Click here to switch to Local Hardhat.`, 8000);
+            showToast('warning', 'Not Deployed', `No contract found on ${networkName}. Click here to switch to Local Hardhat.`);
 
             // Add a one-time click listener to the toast to trigger network switch
             const latestToast = elements.toastContainer.lastElementChild;
