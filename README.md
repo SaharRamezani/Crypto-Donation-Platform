@@ -2,8 +2,6 @@
 
 A decentralized application (dApp) for donating Sepolia ETH to charitable organizations.
 
-> **Version 2.0.0** - Now with UUPS upgradeable contracts and version tracking!
-
 ## Features
 
 - **Donate ETH** - Send Sepolia ETH directly to verified charities
@@ -113,19 +111,13 @@ npm run upgrade:sepolia
 4. **Verifies by calling `getVersion()`** - returns "v2.0.0"
 5. **Updates the frontend ABI** with V2 functions
 
-### V2 New Features
+### V2 Features
 
 | Function | Description |
 |----------|-------------|
 | `getVersion()` | Returns the hardcoded version string "v2.0.0" |
 | `contractVersion()` | State variable for custom version string |
 | `setVersion(string)` | Admin-only: set a custom version |
-
-### Important Notes
-
-- **Admin Required**: Only addresses with `ADMIN_ROLE` can authorize upgrades
-- **Data Preserved**: All donations, charities, and proposals remain intact
-- **Same Address**: Users continue using the same proxy address
 
 ### Reset Project (Start Fresh)
 
@@ -275,14 +267,6 @@ npm run compile
 npm run deploy:sepolia
 ```
 
-You should see output like:
-```
-✅ CharityDonation Proxy deployed successfully!
-Proxy Address: 0x1234...
-Implementation Address: 0x5678...
-Admin address: 0xYOUR_ADDRESS
-```
-
 > **Save these addresses!** The Proxy Address is what users will interact with.
 
 ### Step 6: Upgrade to V2 (Optional)
@@ -291,12 +275,6 @@ After deploying V1, you can upgrade to V2 to enable version tracking:
 
 ```bash
 npm run upgrade:sepolia
-```
-
-You should see:
-```
-✅ CharityDonation upgraded to V2 successfully!
-Contract Version: v2.0.0
 ```
 
 ### Step 7: Verify on Etherscan (Optional)
@@ -318,75 +296,10 @@ Once verified, view your contract at:
 
 After deployment, the `contract-abi.sepolia.json` file is automatically created in your `frontend/` folder.
 
-1. Open the frontend at `http://localhost:3000` (or serve it)
+1. Open the frontend at `http://localhost:3000` (or you can run the docker container as it is already configured to run the frontend with Sepolia)
 2. Switch MetaMask to **Sepolia Test Network**
 3. Connect your wallet
 4. Start donating with real Sepolia ETH!
-
-
----
-
-## Smart Contract Reference
-
-### CharityDonation.sol (V1)
-
-| Function | Description |
-|----------|-------------|
-| `donate(charityId)` | Send ETH to a charity |
-| `proposeCharity(name, description, wallet)` | Propose a new charity |
-| `approveCharity(proposalId)` | Admin: approve proposal |
-| `rejectCharity(proposalId)` | Admin: reject proposal |
-| `withdrawFunds(charityId)` | Charity: withdraw funds |
-| `toggleCharityStatus(charityId)` | Admin: activate/deactivate charity |
-| `getCharities()` | Get all charities |
-| `getActiveCharities()` | Get only active charities |
-| `getDonorLeaderboard(limit)` | Get top donors |
-| `getRecentDonations(limit)` | Get recent donations |
-| `isOwner(address)` | Check if address is admin |
-
-### CharityDonationV2.sol (V2)
-
-Inherits all V1 functions, plus:
-
-| Function | Description |
-|----------|-------------|
-| `getVersion()` | Returns "v2.0.0" |
-| `contractVersion()` | Custom version string (state variable) |
-| `setVersion(string)` | Admin-only: set custom version |
-
-### Events
-
-| Event | Parameters |
-|-------|------------|
-| `DonationReceived` | donor, charityId, amount, timestamp |
-| `CharityProposed` | proposer, name, wallet, proposalId |
-| `CharityApproved` | charityId, name, wallet |
-| `CharityRejected` | proposalId, name |
-| `FundsWithdrawn` | charityId, recipient, amount |
-| `CharityStatusChanged` | charityId, isActive |
-| `VersionUpdated` | oldVersion, newVersion (V2 only) |
-
----
-
-## Governance & Multi-admin
-
-The platform uses OpenZeppelin's **AccessControl** for decentralized governance.
-
-### Roles
-
-| Role | Permissions |
-|------|-------------|
-| `DEFAULT_ADMIN_ROLE` | Super-admin. Can grant/revoke any role. |
-| `ADMIN_ROLE` | Approve/reject proposals, toggle charity status, authorize upgrades. |
-
-### Add an Admin
-
-```javascript
-const ADMIN_ROLE = ethers.keccak256(ethers.toUtf8Bytes("ADMIN_ROLE"));
-await charityDonation.grantRole(ADMIN_ROLE, "0xNEW_ADMIN_ADDRESS");
-```
-
-Or via Etherscan: **Contract** → **Write as Proxy** → `grantRole`
 
 ---
 
@@ -427,18 +340,3 @@ If you see "CALL_EXCEPTION" or "Connection Failed":
 ### "GoChain Testnet" Warning
 
 When adding Chain ID `31337`, MetaMask may suggest "GoChain Testnet". This is a known ID collision with Hardhat. Simply rename it to "Hardhat Local".
-
----
-
-## Technology Stack
-
-| Component | Technology |
-|-----------|------------|
-| Smart Contracts | Solidity ^0.8.22 (Upgradeable) |
-| Development | Hardhat + OpenZeppelin Upgrades |
-| Frontend | HTML, CSS, JavaScript |
-| Blockchain Library | ethers.js v5 |
-| Governance | Multi-admin AccessControl |
-| Upgrade Pattern | UUPS (Universal Upgradeable Proxy Standard) |
-| Network | Ethereum Sepolia Testnet |
-| Containerization | Docker + Docker Compose |

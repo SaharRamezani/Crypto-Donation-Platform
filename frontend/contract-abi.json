@@ -1,5 +1,5 @@
 {
-  "address": "0x582cB3709B9e0d43C10e336825bc8Dd8B22756f3",
+  "address": "0x7a4bdBB4b2e38bDB620c09BD4a1D2a2f36e75c19",
   "abi": [
     {
       "inputs": [],
@@ -337,25 +337,6 @@
       "type": "event"
     },
     {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "oldVersion",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "newVersion",
-          "type": "string"
-        }
-      ],
-      "name": "VersionUpdated",
-      "type": "event"
-    },
-    {
       "stateMutability": "payable",
       "type": "fallback"
     },
@@ -482,19 +463,6 @@
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "contractVersion",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
         }
       ],
       "stateMutability": "view",
@@ -849,19 +817,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "getVersion",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "pure",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "bytes32",
@@ -1079,19 +1034,6 @@
     {
       "inputs": [
         {
-          "internalType": "string",
-          "name": "_version",
-          "type": "string"
-        }
-      ],
-      "name": "setVersion",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "bytes4",
           "name": "interfaceId",
           "type": "bytes4"
@@ -1173,6 +1115,5 @@
   "network": "sepolia",
   "chainId": 11155111,
   "isProxy": true,
-  "implementation": "0x46dB2f32c60Ca32DeE1e840C2553BF20c5c133bC",
-  "version": "v2.0.0"
+  "implementation": "0x111F9c3984fAE3b929EF54966B13E6495bcB5E9a"
 }

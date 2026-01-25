@@ -1,5 +1,5 @@
 {
-  "address": "0x582cB3709B9e0d43C10e336825bc8Dd8B22756f3",
+  "address": "0x7a4bdBB4b2e38bDB620c09BD4a1D2a2f36e75c19",
   "abi": [
     {
       "inputs": [],
@@ -1173,6 +1173,6 @@
   "network": "sepolia",
   "chainId": 11155111,
   "isProxy": true,
-  "implementation": "0x46dB2f32c60Ca32DeE1e840C2553BF20c5c133bC",
+  "implementation": "0x8EAFbE0b29c6b92382641CbB1C998E37DFFBb2Ac",
   "version": "v2.0.0"
 }
