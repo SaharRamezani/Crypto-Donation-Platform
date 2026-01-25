@@ -153,8 +153,6 @@ You need an RPC endpoint to connect to Sepolia. Choose a provider:
 
 ## Step 3: Export Your Private Key from MetaMask
 
-> ⚠️ **SECURITY WARNING**: Never share your private key. Never commit it to git. Only use a wallet with testnet ETH for development.
-
 1. Open MetaMask in your browser
 2. Click the three dots (⋮) next to your account name
 3. Click **"Account details"**
@@ -194,8 +192,6 @@ npm run compile
 # Deploy to Sepolia
 npm run deploy:sepolia
 ```
-
-> **Save these addresses!** The Proxy Address is what users will interact with.
 
 ## Step 6: Verify on Etherscan (Optional)
 

@@ -1,9 +1,0 @@
-- [X] Redesign the UI with a different palette
-- [X] Add a dark mode toggle
-- [X] Add the private networks to the networks list in MetaMask and test with Hardhat
-- [X] Charity Status Toggle
-- [X] Investigating the inspection errors in the browser console
-- [] Use EnumerableSet for donors
-- [X] Multi-admin with UUPS Proxy governance
-- [] ERC20 donation support
-- [X] Admin pannel should be in another page

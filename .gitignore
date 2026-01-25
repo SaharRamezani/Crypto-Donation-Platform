@@ -28,3 +28,6 @@ coverage.json
 
 # OpenZeppelin upgrade manifests (keep public network files, ignore local)
 .openzeppelin/unknown-31337.json
+
+# Local project assets
+materials/
