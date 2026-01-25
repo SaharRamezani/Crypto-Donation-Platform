@@ -103,4 +103,85 @@ describe("CharityDonationV2", function () {
             expect(await charityDonationV2.contractVersion()).to.equal("v2.1.0");
         });
     });
+
+    describe("Upgrade Authorization Security", function () {
+        it("Should prevent non-admin from upgrading the contract", async function () {
+            // Deploy V1 with owner as admin
+            const CharityDonationV1 = await ethers.getContractFactory("CharityDonation");
+            const proxyV1 = await upgrades.deployProxy(CharityDonationV1, [], {
+                initializer: "initialize",
+                kind: "uups"
+            });
+            await proxyV1.waitForDeployment();
+
+            // Try to upgrade as non-admin user - this should fail
+            const CharityDonationV2AsUser = await ethers.getContractFactory("CharityDonationV2", user);
+
+            await expect(
+                upgrades.upgradeProxy(await proxyV1.getAddress(), CharityDonationV2AsUser)
+            ).to.be.revertedWith("Caller is not an admin");
+        });
+
+        it("Should allow admin to upgrade the contract", async function () {
+            // Deploy V1
+            const CharityDonationV1 = await ethers.getContractFactory("CharityDonation");
+            const proxyV1 = await upgrades.deployProxy(CharityDonationV1, [], {
+                initializer: "initialize",
+                kind: "uups"
+            });
+            await proxyV1.waitForDeployment();
+
+            // Grant ADMIN_ROLE to admin account
+            const ADMIN_ROLE = await proxyV1.ADMIN_ROLE();
+            await proxyV1.connect(owner).grantRole(ADMIN_ROLE, admin.address);
+
+            // Upgrade as admin - this should succeed
+            const CharityDonationV2AsAdmin = await ethers.getContractFactory("CharityDonationV2", admin);
+            const upgraded = await upgrades.upgradeProxy(
+                await proxyV1.getAddress(),
+                CharityDonationV2AsAdmin
+            );
+
+            expect(await upgraded.getVersion()).to.equal("v2.0.0");
+        });
+
+        it("Should allow super admin (DEFAULT_ADMIN_ROLE holder) to upgrade", async function () {
+            // Deploy V1 - owner automatically gets DEFAULT_ADMIN_ROLE
+            const CharityDonationV1 = await ethers.getContractFactory("CharityDonation");
+            const proxyV1 = await upgrades.deployProxy(CharityDonationV1, [], {
+                initializer: "initialize",
+                kind: "uups"
+            });
+            await proxyV1.waitForDeployment();
+
+            // Upgrade as owner (super admin) - this should succeed
+            const CharityDonationV2AsOwner = await ethers.getContractFactory("CharityDonationV2", owner);
+            const upgraded = await upgrades.upgradeProxy(
+                await proxyV1.getAddress(),
+                CharityDonationV2AsOwner
+            );
+
+            expect(await upgraded.getVersion()).to.equal("v2.0.0");
+        });
+
+        it("Should prevent upgrade attempt via direct upgradeToAndCall from non-admin", async function () {
+            // Deploy V1 and V2 implementation
+            const CharityDonationV1 = await ethers.getContractFactory("CharityDonation");
+            const proxyV1 = await upgrades.deployProxy(CharityDonationV1, [], {
+                initializer: "initialize",
+                kind: "uups"
+            });
+            await proxyV1.waitForDeployment();
+
+            // Deploy a standalone V2 implementation
+            const CharityDonationV2 = await ethers.getContractFactory("CharityDonationV2");
+            const v2Implementation = await CharityDonationV2.deploy();
+            await v2Implementation.waitForDeployment();
+
+            // Try to call upgradeToAndCall directly as non-admin
+            await expect(
+                proxyV1.connect(user).upgradeToAndCall(await v2Implementation.getAddress(), "0x")
+            ).to.be.revertedWith("Caller is not an admin");
+        });
+    });
 });
