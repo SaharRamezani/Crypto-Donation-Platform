@@ -42,16 +42,24 @@ Crypto-Donation-Platform/
 └── .env.example                  # Environment template
 ```
 
-## Quick Start
+---
 
-### Run with Docker (Recommended)
+# Local Development with Hardhat
 
-Start all services with Docker Compose:
+If you want to test transactions locally without deploying to Sepolia:
+
+## Step 1: Force Local Hardhat Mode
+
+By default, Docker uses your Sepolia deployment if it exists. To force local mode:
+
 ```bash
 # Start Docker daemon first (may need sudo)
 sudo systemctl start docker
 
-# Build and run all services
+# Temporarily rename the Sepolia config
+mv frontend/contract-abi.sepolia.json frontend/contract-abi.sepolia.json.bak
+
+# Start Docker (will deploy to local Hardhat)
 docker compose up --build
 ```
 
@@ -66,41 +74,7 @@ To stop:
 docker compose down
 ```
 
-### NPM Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run compile` | Compile all Solidity contracts |
-| `npm run test` | Run all tests (V1 + V2) |
-| `npm run node` | Start a local Hardhat node |
-| `npm run deploy:local` | Deploy V1 proxy to localhost |
-| `npm run deploy:docker` | Deploy V1 proxy inside Docker |
-| `npm run deploy:sepolia` | Deploy V1 proxy to Sepolia |
-| `npm run upgrade:local` | Upgrade to V2 on localhost |
-| `npm run upgrade:docker` | Upgrade to V2 inside Docker |
-| `npm run upgrade:sepolia` | Upgrade to V2 on Sepolia |
-| `npm run clean:docker` | Remove project Docker containers, images, and volumes |
-| `npm run reset:docker` | Fully reset the Docker environment and redeploy |
-
----
-
-# Local Development with Hardhat
-
-If you want to test transactions locally without deploying to Sepolia:
-
-## Step 1: Force Local Hardhat Mode
-
-By default, Docker uses your Sepolia deployment if it exists. To force local mode:
-
-```bash
-# Temporarily rename the Sepolia config
-mv frontend/contract-abi.sepolia.json frontend/contract-abi.sepolia.json.bak
-
-# Start Docker (will deploy to local Hardhat)
-docker compose up --build
-```
-
-When you move from Hardhat to Sepolia (and vice versa), you need to modify the .env file and change the private key, Metasmask network, clear the cache, and refresh the page.
+> **Note**: When you move from Hardhat to Sepolia (and vice versa), you need to modify the .env file and change the private key, Metasmask network, clear the cache, and refresh the page.
 
 ## Step 2: Add Hardhat Network to MetaMask
 
@@ -314,6 +288,24 @@ Instead of automatically sending donations to charities, funds accumulate in the
 3. Confirm the transaction
 
 This prevents reentrancy attacks and ensures reliable donation processing.
+
+---
+
+# NPM Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run compile` | Compile all Solidity contracts |
+| `npm run test` | Run all tests (V1 + V2) |
+| `npm run node` | Start a local Hardhat node |
+| `npm run deploy:local` | Deploy V1 proxy to localhost |
+| `npm run deploy:docker` | Deploy V1 proxy inside Docker |
+| `npm run deploy:sepolia` | Deploy V1 proxy to Sepolia |
+| `npm run upgrade:local` | Upgrade to V2 on localhost |
+| `npm run upgrade:docker` | Upgrade to V2 inside Docker |
+| `npm run upgrade:sepolia` | Upgrade to V2 on Sepolia |
+| `npm run clean:docker` | Remove project Docker containers, images, and volumes |
+| `npm run reset:docker` | Fully reset the Docker environment and redeploy |
 
 ---
 
