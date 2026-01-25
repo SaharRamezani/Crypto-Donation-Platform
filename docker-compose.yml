@@ -32,7 +32,7 @@ services:
         else
           echo 'No Sepolia deployment found, deploying to local Hardhat...' &&
           sleep 15 &&
-          npx hardhat run scripts/deploy.js --network docker &&
+          npm run deploy:docker &&
           echo 'Local contract deployed successfully!'
         fi
       "
@@ -40,6 +40,7 @@ services:
       - crypto-network
     volumes:
       - ./frontend:/app/frontend
+      - ./deployments:/app/deployments
 
   # Frontend - Nginx web server
   frontend:

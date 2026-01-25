@@ -1,14 +1,20 @@
 {
   "name": "crypto-donation-platform",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A decentralized application for charitable donations using Ethereum",
   "main": "index.js",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
-    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
-    "node": "hardhat node"
+    "deploy:local": "hardhat run scripts/deploy_proxy.js --network localhost",
+    "deploy:docker": "hardhat run scripts/deploy_proxy.js --network docker",
+    "deploy:sepolia": "hardhat run scripts/deploy_proxy.js --network sepolia",
+    "upgrade:local": "hardhat run scripts/upgrade_contract.js --network localhost",
+    "upgrade:docker": "hardhat run scripts/upgrade_contract.js --network docker",
+    "upgrade:sepolia": "hardhat run scripts/upgrade_contract.js --network sepolia",
+    "clean:docker": "rm -rf deployments/docker_proxy.json",
+    "reset:docker": "docker compose down || true; npm run clean:docker; docker compose up -d --wait",
+    "node": "hardhat node --hostname 0.0.0.0"
   },
   "keywords": [
     "ethereum",
@@ -25,6 +31,9 @@
     "hardhat": "^2.19.0"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0",
+    "@openzeppelin/contracts-upgradeable": "^5.4.0",
+    "@openzeppelin/hardhat-upgrades": "^3.9.1",
     "dotenv": "^16.3.1"
   }
 }

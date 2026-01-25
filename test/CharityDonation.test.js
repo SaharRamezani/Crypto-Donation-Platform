@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { ethers } = require("hardhat");
+const { ethers, upgrades } = require("hardhat");
 
 describe("CharityDonation", function () {
     let charityDonation;
@@ -12,22 +12,26 @@ describe("CharityDonation", function () {
         [owner, donor1, donor2, charityWallet] = await ethers.getSigners();
 
         const CharityDonation = await ethers.getContractFactory("CharityDonation");
-        charityDonation = await CharityDonation.deploy();
+        charityDonation = await upgrades.deployProxy(CharityDonation, [], {
+            initializer: "initialize",
+            kind: "uups"
+        });
         await charityDonation.waitForDeployment();
     });
 
     describe("Deployment", function () {
-        it("Should set the correct owner", async function () {
-            expect(await charityDonation.owner()).to.equal(owner.address);
+        it("Should set the correct admin role", async function () {
+            const ADMIN_ROLE = await charityDonation.ADMIN_ROLE();
+            expect(await charityDonation.hasRole(ADMIN_ROLE, owner.address)).to.be.true;
         });
 
-        it("Should initialize with 5 pre-defined charities", async function () {
-            expect(await charityDonation.charityCount()).to.equal(5);
+        it("Should initialize with 1 pre-defined charities", async function () {
+            expect(await charityDonation.charityCount()).to.equal(1);
         });
 
         it("Should have active charities", async function () {
             const charities = await charityDonation.getActiveCharities();
-            expect(charities.length).to.equal(5);
+            expect(charities.length).to.equal(1);
         });
     });
 
@@ -55,7 +59,7 @@ describe("CharityDonation", function () {
             const amount2 = ethers.parseEther("0.2");
 
             await charityDonation.connect(donor1).donate(1, { value: amount1 });
-            await charityDonation.connect(donor1).donate(2, { value: amount2 });
+            await charityDonation.connect(donor1).donate(1, { value: amount2 });
 
             expect(await charityDonation.getDonorTotal(donor1.address)).to.equal(amount1 + amount2);
         });
@@ -105,7 +109,7 @@ describe("CharityDonation", function () {
             await expect(charityDonation.connect(owner).approveCharity(1))
                 .to.emit(charityDonation, "CharityApproved");
 
-            expect(await charityDonation.charityCount()).to.equal(6);
+            expect(await charityDonation.charityCount()).to.equal(2);
         });
 
         it("Should allow owner to reject proposals", async function () {
@@ -113,12 +117,12 @@ describe("CharityDonation", function () {
                 .to.emit(charityDonation, "CharityRejected");
 
             // Charity count should remain the same
-            expect(await charityDonation.charityCount()).to.equal(5);
+            expect(await charityDonation.charityCount()).to.equal(1);
         });
 
-        it("Should prevent non-owners from approving", async function () {
+        it("Should prevent non-admins from approving", async function () {
             await expect(charityDonation.connect(donor1).approveCharity(1))
-                .to.be.revertedWith("Only owner can call this function");
+                .to.be.revertedWith("Caller is not an admin");
         });
 
         it("Should prevent double processing of proposals", async function () {
@@ -126,13 +130,26 @@ describe("CharityDonation", function () {
             await expect(charityDonation.connect(owner).approveCharity(1))
                 .to.be.revertedWith("Proposal already processed");
         });
+
+        it("Should allow a newly added admin to approve proposals", async function () {
+            const ADMIN_ROLE = await charityDonation.ADMIN_ROLE();
+
+            // 1. Grant donor2 the admin role
+            await charityDonation.connect(owner).grantRole(ADMIN_ROLE, donor2.address);
+
+            // 2. donor2 should now be able to approve
+            await expect(charityDonation.connect(donor2).approveCharity(1))
+                .to.emit(charityDonation, "CharityApproved");
+
+            expect(await charityDonation.charityCount()).to.equal(2);
+        });
     });
 
     describe("Leaderboard", function () {
         it("Should return top donors in correct order", async function () {
             await charityDonation.connect(donor1).donate(1, { value: ethers.parseEther("0.1") });
             await charityDonation.connect(donor2).donate(1, { value: ethers.parseEther("0.5") });
-            await charityDonation.connect(donor1).donate(2, { value: ethers.parseEther("0.2") });
+            await charityDonation.connect(donor1).donate(1, { value: ethers.parseEther("0.2") });
 
             const leaderboard = await charityDonation.getDonorLeaderboard(10);
 
@@ -149,7 +166,7 @@ describe("CharityDonation", function () {
             })).to.be.revertedWith("Please use the donate function");
         });
 
-        it("Should check owner correctly", async function () {
+        it("Should check admin correctly", async function () {
             expect(await charityDonation.isOwner(owner.address)).to.be.true;
             expect(await charityDonation.isOwner(donor1.address)).to.be.false;
         });

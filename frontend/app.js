@@ -21,17 +21,8 @@ const CONFIG = {
 
     // Charity icons based on name keywords
     charityIcons: {
-        'red cross': '🏥',
         'unicef': '👶',
-        'doctors': '⚕️',
-        'wildlife': '🐾',
-        'children': '👧',
-        'food': '🍞',
-        'education': '📚',
-        'environment': '🌍',
-        'water': '💧',
-        'health': '❤️',
-        'default': '🎗️'
+        'default': '❤️'
     }
 };
 
@@ -45,8 +36,9 @@ const CONTRACT_ABI = [
     "event FundsWithdrawn(uint256 indexed charityId, address indexed recipient, uint256 amount)",
     "event CharityStatusChanged(uint256 indexed charityId, bool isActive)",
 
+    "function charityBalances(uint256 charityId) view returns (uint256)",
+
     // Read functions
-    "function owner() view returns (address)",
     "function charityCount() view returns (uint256)",
     "function proposalCount() view returns (uint256)",
     "function totalDonations() view returns (uint256)",
@@ -58,7 +50,6 @@ const CONTRACT_ABI = [
     "function getDonorTotal(address donor) view returns (uint256)",
     "function getContractBalance() view returns (uint256)",
     "function isOwner(address addr) view returns (bool)",
-    "function charityBalances(uint256 charityId) view returns (uint256)",
 
     // Write functions
     "function donate(uint256 charityId) payable",
@@ -66,8 +57,25 @@ const CONTRACT_ABI = [
     "function approveCharity(uint256 proposalId)",
     "function rejectCharity(uint256 proposalId)",
     "function withdrawFunds(uint256 charityId)",
-    "function toggleCharityStatus(uint256 charityId)"
+    "function toggleCharityStatus(uint256 charityId)",
+
+    // Role Management
+    "function grantRole(bytes32 role, address account)",
+    "function hasRole(bytes32 role, address account) view returns (bool)",
+    "function DEFAULT_ADMIN_ROLE() view returns (bytes32)",
+    "function ADMIN_ROLE() view returns (bytes32)",
+
+    // V2 Functions
+    "function getVersion() view returns (string)",
+    "function contractVersion() view returns (string)",
+    "function setVersion(string memory version)",
+    "event VersionUpdated(string oldVersion, string newVersion)"
 ];
+
+const ROLES = {
+    DEFAULT_ADMIN: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    ADMIN: null // Will be loaded from contract
+};
 
 // ============ State ============
 let provider = null;
@@ -75,6 +83,7 @@ let signer = null;
 let contract = null;
 let userAddress = null;
 let isOwner = false;
+let isSuperAdmin = false;
 let charities = [];
 let currentTheme = 'light';
 
@@ -84,6 +93,7 @@ const elements = {
     walletInfo: document.getElementById('walletInfo'),
     walletAddress: document.getElementById('walletAddress'),
     walletBalance: document.getElementById('walletBalance'),
+    disconnectWallet: document.getElementById('disconnectWallet'),
     networkBadge: document.getElementById('networkBadge'),
     networkName: document.getElementById('networkName'),
 
@@ -118,11 +128,23 @@ const elements = {
     mainView: document.getElementById('mainView'),
     adminView: document.getElementById('adminView'),
 
+    roleManagement: document.getElementById('roleManagement'),
+    grantRoleForm: document.getElementById('grantRoleForm'),
+    adminAddress: document.getElementById('adminAddress'),
+
     contractAddress: document.getElementById('contractAddress'),
     viewContract: document.getElementById('viewContract'),
 
     themeToggle: document.getElementById('themeToggle'),
-    toastContainer: document.getElementById('toastContainer')
+    toastContainer: document.getElementById('toastContainer'),
+
+    // Debug Elements
+    debugNetwork: document.getElementById('debugNetwork'),
+    debugChainId: document.getElementById('debugChainId'),
+    debugAccount: document.getElementById('debugAccount'),
+
+    // Version Badge
+    versionBadge: document.getElementById('versionBadge')
 };
 
 // ============ Initialization ============
@@ -164,6 +186,16 @@ async function setupProvider() {
         const abi = CONFIG.contractABI || CONTRACT_ABI;
         contract = new ethers.Contract(CONFIG.contractAddress, abi, provider);
     }
+
+    // Initialize Debug UI from provider if available
+    try {
+        const network = await provider.getNetwork();
+        const chainIdHex = '0x' + network.chainId.toString(16);
+        const networkName = CONFIG.networks[chainIdHex] || network.name || 'Unknown';
+
+        if (elements.debugChainId) elements.debugChainId.textContent = network.chainId;
+        if (elements.debugNetwork) elements.debugNetwork.textContent = networkName;
+    } catch (e) { }
 }
 
 async function loadContractConfig(chainId = null) {
@@ -204,7 +236,10 @@ async function loadContractConfig(chainId = null) {
                 }
             }
 
-            console.log(`Loaded contract: ${config.address} on ${config.network} (chain ${config.chainId})`);
+            console.log(`✅ Loaded contract: ${config.address} on ${config.network} (chain ${config.chainId})`);
+        } else {
+            console.warn(`⚠️ Could not load config file: ${configFile} (Status: ${response.status})`);
+            CONFIG.contractAddress = null; // Reset if fetch fails
         }
     } catch (error) {
         console.log('No contract config found, using demo mode');
@@ -246,6 +281,7 @@ function initializeParticles() {
 function initializeEventListeners() {
     // Wallet connection
     elements.connectWallet.addEventListener('click', connectWallet);
+    elements.disconnectWallet.addEventListener('click', disconnectWallet);
 
     // View Switching
     elements.adminToggle.addEventListener('click', () => {
@@ -280,6 +316,9 @@ function initializeEventListeners() {
 
     // Propose charity form
     elements.proposeForm.addEventListener('submit', proposeCharity);
+
+    // Grant role form
+    elements.grantRoleForm.addEventListener('submit', grantAdminRole);
 
     // Listen for account changes
     if (window.ethereum) {
@@ -318,7 +357,8 @@ async function connectWallet() {
         const chainId = '0x' + network.chainId.toString(16);
 
         console.log('Connected to network:', network.name, 'Chain ID:', network.chainId);
-        console.log('Contract address:', CONFIG.contractAddress);
+        console.log('Contract address (Proxy):', CONFIG.contractAddress);
+        console.log('Connected Address:', userAddress);
 
         // Check if on a supported network (Sepolia or local Hardhat)
         const isSepolia = network.chainId === 11155111;
@@ -340,23 +380,60 @@ async function connectWallet() {
         // Update UI
         updateWalletUI(accounts[0], chainId);
 
+        // Update Debug UI
+        const networkName = CONFIG.networks[chainId] || network.name || 'Unknown';
+        if (elements.debugAccount) elements.debugAccount.textContent = shortenAddress(accounts[0]);
+        if (elements.debugChainId) elements.debugChainId.textContent = network.chainId;
+        if (elements.debugNetwork) elements.debugNetwork.textContent = networkName;
+
         // Initialize contract if address is available
         if (CONFIG.contractAddress) {
             const abi = CONFIG.contractABI || CONTRACT_ABI;
             contract = new ethers.Contract(CONFIG.contractAddress, abi, signer);
 
-            // Check if user is owner
+            // Fetch role identifiers
             try {
-                isOwner = await contract.isOwner(userAddress);
-            } catch (ownerError) {
-                console.error('isOwner check failed:', ownerError);
-                isOwner = false;
+                ROLES.ADMIN = await contract.ADMIN_ROLE();
+            } catch (roleError) {
+                console.error('Failed to fetch ADMIN_ROLE identifier:', roleError);
+                // Fallback to keccak256("ADMIN_ROLE") if contract call fails
+                ROLES.ADMIN = ethers.utils.id("ADMIN_ROLE");
             }
 
-            // Show admin panel if owner
+            // Check if user is owner (ADMIN_ROLE) or super admin (DEFAULT_ADMIN_ROLE)
+            try {
+                console.log('Checking roles for:', userAddress);
+                console.log('ADMIN_ROLE:', ROLES.ADMIN);
+                console.log('DEFAULT_ADMIN_ROLE:', ROLES.DEFAULT_ADMIN);
+
+                // Use checksummed address just in case
+                const checksummedAddress = ethers.utils.getAddress(userAddress);
+
+                const [isAdmin, superAdmin] = await Promise.all([
+                    contract.hasRole(ROLES.ADMIN, checksummedAddress),
+                    contract.hasRole(ROLES.DEFAULT_ADMIN, checksummedAddress)
+                ]);
+
+                console.log('isAdmin result:', isAdmin);
+                console.log('isSuperAdmin result:', superAdmin);
+
+                isOwner = isAdmin || superAdmin;
+                isSuperAdmin = superAdmin;
+            } catch (ownerError) {
+                console.error('Role check failed:', ownerError);
+                isOwner = false;
+                isSuperAdmin = false;
+            }
+
+            // Show admin panel if admin
             if (isOwner) {
                 elements.adminToggle.classList.remove('hidden');
                 elements.adminPanel.classList.remove('hidden');
+            }
+
+            // Show role management only if super admin
+            if (isSuperAdmin) {
+                elements.roleManagement.classList.remove('hidden');
             }
 
             // Load data
@@ -365,8 +442,31 @@ async function connectWallet() {
             // Setup event listeners
             setupContractEventListeners();
         } else {
-            showToast('warning', 'Demo Mode', 'Contract not deployed. Showing demo data.');
-            loadDemoData();
+            const networkName = isSepolia ? 'Sepolia' : (isLocalHardhat ? 'Hardhat' : 'this network');
+            showToast('warning', 'Not Deployed', `No contract found on ${networkName}. Click here to switch to Local Hardhat.`);
+
+            // Add a one-time click listener to the toast to trigger network switch
+            const latestToast = elements.toastContainer.lastElementChild;
+            if (latestToast) {
+                latestToast.style.cursor = 'pointer';
+                latestToast.addEventListener('click', async () => {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: '0x7A69', // 31337
+                                chainName: 'Hardhat Local',
+                                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                                rpcUrls: ['http://127.0.0.1:8545'],
+                            }]
+                        });
+                    } catch (switchError) {
+                        console.error('Failed to switch network:', switchError);
+                    }
+                });
+            }
+
+            console.error(`Contract address is null. Network: ${network.name} (Chain: ${network.chainId})`);
         }
 
     } catch (error) {
@@ -389,6 +489,35 @@ function updateWalletUI(address, chainId) {
     provider.getBalance(address).then(balance => {
         elements.walletBalance.textContent = `${parseFloat(ethers.utils.formatEther(balance)).toFixed(4)} ETH`;
     });
+}
+
+async function disconnectWallet() {
+    // We can't actually force MetaMask to disconnect, 
+    // but we can clear our applications state
+    userAddress = null;
+    signer = null;
+    isOwner = false;
+    isSuperAdmin = false;
+
+    // Reset UI
+    elements.walletInfo.classList.add('hidden');
+    elements.networkBadge.classList.add('hidden');
+    elements.connectWallet.classList.remove('hidden');
+    elements.connectWallet.disabled = false;
+    elements.connectWallet.innerHTML = 'Connect Wallet';
+
+    // Hide admin features
+    elements.adminToggle.classList.add('hidden');
+    elements.adminPanel.classList.add('hidden');
+    elements.roleManagement.classList.add('hidden');
+
+    // Switch to main view
+    switchView('main');
+
+    // Clear local storage if we were tracking connection
+    localStorage.removeItem('connected');
+
+    showToast('info', 'Disconnected', 'Wallet state cleared from application');
 }
 
 function handleAccountsChanged(accounts) {
@@ -466,7 +595,8 @@ async function loadAllData() {
             loadCharities(),
             loadStats(),
             loadLeaderboard(),
-            loadHistory()
+            loadHistory(),
+            loadVersion()
         ]);
 
         if (isOwner) {
@@ -475,6 +605,25 @@ async function loadAllData() {
     } catch (error) {
         console.error('Error loading data:', error);
         showToast('error', 'Load Error', 'Failed to load blockchain data');
+    }
+}
+
+async function loadVersion() {
+    if (!contract) return;
+    try {
+        const version = await contract.getVersion();
+        if (version && elements.versionBadge) {
+            elements.versionBadge.textContent = version;
+            elements.versionBadge.classList.remove('hidden');
+            console.log(`Contract Version: ${version}`);
+        }
+    } catch (error) {
+        // V1 contracts don't have getVersion, so this is expected to fail
+        console.log('Version not available (V1 contract)');
+        if (elements.versionBadge) {
+            elements.versionBadge.textContent = 'v1.0.0';
+            elements.versionBadge.classList.remove('hidden');
+        }
     }
 }
 
@@ -888,6 +1037,49 @@ async function rejectProposal(proposalId) {
     } catch (error) {
         console.error('Rejection error:', error);
         showToast('error', 'Rejection Failed', error.reason || error.message);
+    }
+}
+
+async function grantAdminRole(e) {
+    e.preventDefault();
+
+    if (!signer) {
+        showToast('warning', 'Wallet Required', 'Please connect your wallet first');
+        return;
+    }
+
+    const adminAddress = elements.adminAddress.value.trim();
+
+    if (!ethers.utils.isAddress(adminAddress)) {
+        showToast('error', 'Invalid Address', 'Please enter a valid Ethereum address');
+        return;
+    }
+
+    try {
+        const submitBtn = elements.grantRoleForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="btn-icon">⏳</span> Processing...';
+
+        showToast('info', 'Processing', 'Please confirm the transaction in MetaMask...');
+
+        const tx = await contract.grantRole(ROLES.ADMIN, adminAddress);
+
+        showToast('info', 'Transaction Sent', 'Waiting for confirmation...');
+
+        await tx.wait();
+
+        showToast('success', 'Admin Role Granted! 🔑', `Address ${shortenAddress(adminAddress)} is now an admin`);
+
+        // Reset form
+        elements.grantRoleForm.reset();
+
+    } catch (error) {
+        console.error('Grant role error:', error);
+        showToast('error', 'Grant Role Failed', error.reason || error.message || 'Transaction failed');
+    } finally {
+        const submitBtn = elements.grantRoleForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span class="btn-icon">➕</span> Grant Admin Role';
     }
 }
 

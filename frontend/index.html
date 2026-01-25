@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
         content="Donate Sepolia ETH to charitable organizations through our decentralized platform">
-    <title>Crypto Donation Platform | Support Charities with ETH</title>
+    <title>Sarita | Donate to Charities</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -52,6 +52,12 @@
                 <div id="walletInfo" class="wallet-info hidden">
                     <span id="walletAddress" class="wallet-address"></span>
                     <span id="walletBalance" class="wallet-balance"></span>
+                    <button id="disconnectWallet" class="btn btn-outline-sm btn-icon-only" title="Disconnect Wallet">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -262,13 +268,52 @@
                 </div>
             </div>
         </section>
+
+        <!-- Role Management (Super Admin Only) -->
+        <section id="roleManagement" class="section section-alt hidden">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Role Management</h2>
+                    <p class="section-subtitle">Manage administrative permissions</p>
+                </div>
+                <div class="role-management-container">
+                    <div class="role-card">
+                        <div class="role-card-header">
+                            <span class="role-icon">🔑</span>
+                            <h3 class="role-card-title">Add New Admin</h3>
+                        </div>
+                        <p class="role-description">Grant <strong>ADMIN_ROLE</strong> to a wallet address. Admins can
+                            approve proposals and manage charity status.</p>
+                        <form id="grantRoleForm" class="role-form">
+                            <div class="form-group">
+                                <label for="adminAddress">Wallet Address</label>
+                                <input type="text" id="adminAddress" placeholder="0x..." pattern="^0x[a-fA-F0-9]{40}$"
+                                    required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-full">
+                                <span class="btn-icon">➕</span> Grant Admin Role
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
+                <div id="debugInfo" class="footer-debug">
+                    <span class="debug-badge">Net: <span id="debugNetwork">None</span></span>
+                    <span class="divider">|</span>
+                    <span class="debug-badge">ID: <span id="debugChainId">N/A</span></span>
+                    <span class="divider">|</span>
+                    <span class="debug-badge">Acc: <span id="debugAccount">Disconnected</span></span>
+                </div>
                 <div class="footer-links">
+                    <span id="versionBadge" class="version-badge hidden">v1.0.0</span>
+                    <span class="divider">•</span>
                     <a href="#" id="viewContract" class="footer-link">View Contract</a>
                     <span class="divider">•</span>
                     <span id="contractAddress" class="contract-address">Not Deployed</span>
