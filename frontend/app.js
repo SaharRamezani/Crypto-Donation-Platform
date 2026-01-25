@@ -45,7 +45,8 @@ const CONTRACT_ABI = [
     "function getCharities() view returns (tuple(uint256 id, string name, string description, address walletAddress, uint256 totalReceived, bool isActive)[])",
     "function getActiveCharities() view returns (tuple(uint256 id, string name, string description, address walletAddress, uint256 totalReceived, bool isActive)[])",
     "function getPendingProposals() view returns (tuple(uint256 id, string name, string description, address walletAddress, address proposer, bool isProcessed, bool isApproved)[])",
-    "function getDonorLeaderboard(uint256 limit) view returns (tuple(address donorAddress, uint256 totalDonated)[])",
+    "function getAllDonors() view returns (tuple(address donorAddress, uint256 totalDonated)[])",
+    "function getDonorCount() view returns (uint256)",
     "function getRecentDonations(uint256 limit) view returns (tuple(address donor, uint256 charityId, uint256 amount, uint256 timestamp)[])",
     "function getDonorTotal(address donor) view returns (uint256)",
     "function getContractBalance() view returns (uint256)",
@@ -619,16 +620,15 @@ async function loadCharities() {
 async function loadStats() {
     if (!contract) return;
     try {
-        const [totalDonations, charityCount] = await Promise.all([
+        const [totalDonations, charityCount, donorCount] = await Promise.all([
             contract.totalDonations(),
-            contract.charityCount()
+            contract.charityCount(),
+            contract.getDonorCount()
         ]);
-
-        const leaderboard = await contract.getDonorLeaderboard(100);
 
         elements.totalDonated.textContent = parseFloat(ethers.utils.formatEther(totalDonations)).toFixed(4);
         elements.totalCharities.textContent = charityCount.toString();
-        elements.totalDonors.textContent = leaderboard.length.toString();
+        elements.totalDonors.textContent = donorCount.toString();
     } catch (error) {
         console.error('Error loading stats:', error);
     }
@@ -637,8 +637,19 @@ async function loadStats() {
 async function loadLeaderboard() {
     if (!contract) return;
     try {
-        const leaderboard = await contract.getDonorLeaderboard(10);
-        renderLeaderboard(leaderboard);
+        const allDonors = await contract.getAllDonors();
+
+        // Sort donors by totalDonated (descending) on frontend - much more gas efficient
+        const sortedDonors = [...allDonors]
+            .sort((a, b) => {
+                // Handle BigNumber comparison
+                if (b.totalDonated.gt(a.totalDonated)) return 1;
+                if (a.totalDonated.gt(b.totalDonated)) return -1;
+                return 0;
+            })
+            .slice(0, 10); // Take top 10
+
+        renderLeaderboard(sortedDonors);
     } catch (error) {
         console.error('Error loading leaderboard:', error);
     }

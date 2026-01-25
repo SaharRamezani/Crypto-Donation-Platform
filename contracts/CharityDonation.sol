@@ -340,9 +340,13 @@ contract CharityDonation is
      * @return Array of all charity data
      */
     function getCharities() external view returns (Charity[] memory) {
-        Charity[] memory allCharities = new Charity[](charityCount);
-        for (uint256 i = 1; i <= charityCount; i++) {
+        uint256 count = charityCount;
+        Charity[] memory allCharities = new Charity[](count);
+        for (uint256 i = 1; i <= count; ) {
             allCharities[i - 1] = charities[i];
+            unchecked {
+                ++i;
+            }
         }
         return allCharities;
     }
@@ -352,17 +356,33 @@ contract CharityDonation is
      * @return Array of active charity data
      */
     function getActiveCharities() external view returns (Charity[] memory) {
+        uint256 count = charityCount;
         uint256 activeCount = 0;
-        for (uint256 i = 1; i <= charityCount; i++) {
-            if (charities[i].isActive) activeCount++;
+
+        // First pass: count active charities
+        for (uint256 i = 1; i <= count; ) {
+            if (charities[i].isActive) {
+                unchecked {
+                    ++activeCount;
+                }
+            }
+            unchecked {
+                ++i;
+            }
         }
 
+        // Second pass: populate array
         Charity[] memory activeCharities = new Charity[](activeCount);
         uint256 index = 0;
-        for (uint256 i = 1; i <= charityCount; i++) {
+        for (uint256 i = 1; i <= count; ) {
             if (charities[i].isActive) {
                 activeCharities[index] = charities[i];
-                index++;
+                unchecked {
+                    ++index;
+                }
+            }
+            unchecked {
+                ++i;
             }
         }
         return activeCharities;
@@ -377,59 +397,65 @@ contract CharityDonation is
         view
         returns (CharityProposal[] memory)
     {
+        uint256 count = proposalCount;
         uint256 pendingCount = 0;
-        for (uint256 i = 1; i <= proposalCount; i++) {
-            if (!proposals[i].isProcessed) pendingCount++;
+
+        // First pass: count pending
+        for (uint256 i = 1; i <= count; ) {
+            if (!proposals[i].isProcessed) {
+                unchecked {
+                    ++pendingCount;
+                }
+            }
+            unchecked {
+                ++i;
+            }
         }
 
+        // Second pass: populate array
         CharityProposal[] memory pending = new CharityProposal[](pendingCount);
         uint256 index = 0;
-        for (uint256 i = 1; i <= proposalCount; i++) {
+        for (uint256 i = 1; i <= count; ) {
             if (!proposals[i].isProcessed) {
                 pending[index] = proposals[i];
-                index++;
+                unchecked {
+                    ++index;
+                }
+            }
+            unchecked {
+                ++i;
             }
         }
         return pending;
     }
 
     /**
-     * @notice Get top donors leaderboard
-     * @param _limit Maximum number of donors to return
-     * @return Array of top donors sorted by donation amount
+     * @notice Get all donors (unsorted - sort on frontend for gas efficiency)
+     * @return Array of all donors with their total donations
      */
-    function getDonorLeaderboard(
-        uint256 _limit
-    ) external view returns (Donor[] memory) {
-        uint256 count = donorAddresses.length;
-        if (_limit < count) count = _limit;
+    function getAllDonors() external view returns (Donor[] memory) {
+        uint256 len = donorAddresses.length;
+        Donor[] memory allDonors = new Donor[](len);
 
-        // Create array of all donors
-        Donor[] memory allDonors = new Donor[](donorAddresses.length);
-        for (uint256 i = 0; i < donorAddresses.length; i++) {
+        for (uint256 i = 0; i < len; ) {
+            address donorAddr = donorAddresses[i];
             allDonors[i] = Donor({
-                donorAddress: donorAddresses[i],
-                totalDonated: donorTotalDonations[donorAddresses[i]]
+                donorAddress: donorAddr,
+                totalDonated: donorTotalDonations[donorAddr]
             });
-        }
-
-        // Simple bubble sort for top donors (acceptable for small datasets)
-        for (uint256 i = 0; i < allDonors.length; i++) {
-            for (uint256 j = i + 1; j < allDonors.length; j++) {
-                if (allDonors[j].totalDonated > allDonors[i].totalDonated) {
-                    Donor memory temp = allDonors[i];
-                    allDonors[i] = allDonors[j];
-                    allDonors[j] = temp;
-                }
+            unchecked {
+                ++i;
             }
         }
+        return allDonors;
+    }
 
-        // Return top donors up to limit
-        Donor[] memory topDonors = new Donor[](count);
-        for (uint256 i = 0; i < count; i++) {
-            topDonors[i] = allDonors[i];
-        }
-        return topDonors;
+    /**
+     * @notice Get donor count (useful for pagination)
+     * @return Total number of unique donors
+     */
+    function getDonorCount() external view returns (uint256) {
+        return donorAddresses.length;
     }
 
     /**
@@ -440,12 +466,15 @@ contract CharityDonation is
     function getRecentDonations(
         uint256 _limit
     ) external view returns (Donation[] memory) {
-        uint256 count = donationHistory.length;
-        if (_limit < count) count = _limit;
+        uint256 historyLen = donationHistory.length;
+        uint256 count = _limit < historyLen ? _limit : historyLen;
 
         Donation[] memory recent = new Donation[](count);
-        for (uint256 i = 0; i < count; i++) {
-            recent[i] = donationHistory[donationHistory.length - 1 - i];
+        for (uint256 i = 0; i < count; ) {
+            recent[i] = donationHistory[historyLen - 1 - i];
+            unchecked {
+                ++i;
+            }
         }
         return recent;
     }
