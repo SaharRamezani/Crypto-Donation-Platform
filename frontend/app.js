@@ -518,9 +518,6 @@ async function disconnectWallet() {
     localStorage.removeItem('connected');
 
     showToast('info', 'Disconnected', 'Wallet state cleared from application');
-
-    // Reload to ensure fresh state
-    setTimeout(() => location.reload(), 1000);
 }
 
 function handleAccountsChanged(accounts) {
