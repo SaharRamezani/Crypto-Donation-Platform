@@ -83,17 +83,25 @@ async function main() {
     // Update frontend ABI (in case methods changed)
     const artifactPath = path.join(__dirname, "..", "artifacts", "contracts", "CharityDonationV2.sol", "CharityDonationV2.json");
     if (fs.existsSync(artifactPath)) {
-        const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
-        const configFileName = (network.name === "sepolia") ? "contract-abi.sepolia.json" : "contract-abi.json";
-        const abiPath = path.join(__dirname, "..", "frontend", configFileName);
+        try {
+            const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
+            const configFileName = (network.name === "sepolia") ? "contract-abi.sepolia.json" : "contract-abi.json";
+            const abiPath = path.join(__dirname, "..", "frontend", configFileName);
 
-        const frontendConfig = JSON.parse(fs.readFileSync(abiPath, "utf8"));
-        frontendConfig.abi = artifact.abi;
-        frontendConfig.implementation = newImplementationAddress;
-        frontendConfig.version = version;
+            if (!fs.existsSync(abiPath)) {
+                console.warn(`Warning: Frontend ABI file not found at ${abiPath}. Skipping frontend ABI update.`);
+            } else {
+                const frontendConfig = JSON.parse(fs.readFileSync(abiPath, "utf8"));
+                frontendConfig.abi = artifact.abi;
+                frontendConfig.implementation = newImplementationAddress;
+                frontendConfig.version = version;
 
-        fs.writeFileSync(abiPath, JSON.stringify(frontendConfig, null, 2));
-        console.log(`Updated frontend ABI and implementation address.`);
+                fs.writeFileSync(abiPath, JSON.stringify(frontendConfig, null, 2));
+                console.log(`Updated frontend ABI and implementation address.`);
+            }
+        } catch (error) {
+            console.warn("Warning: Failed to update frontend ABI. The contract upgrade succeeded, but the frontend config may be out of date.", error);
+        }
     }
 
     console.log("\n🎉 Upgrade complete!");
