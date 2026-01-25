@@ -2,7 +2,7 @@
 - [X] Add a dark mode toggle
 - [X] Add the private networks to the networks list in MetaMask and test with Hardhat
 - [X] Charity Status Toggle
-- [] Investigating the inspection errors in the browser console
+- [X] Investigating the inspection errors in the browser console
 - [] Use EnumerableSet for donors
 - [X] Multi-admin with UUPS Proxy governance
 - [] ERC20 donation support
