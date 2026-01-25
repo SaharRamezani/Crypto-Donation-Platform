@@ -146,15 +146,22 @@ describe("CharityDonation", function () {
     });
 
     describe("Leaderboard", function () {
-        it("Should return top donors in correct order", async function () {
+        it("Should return donors for client-side sorting", async function () {
             await charityDonation.connect(donor1).donate(1, { value: ethers.parseEther("0.1") });
             await charityDonation.connect(donor2).donate(1, { value: ethers.parseEther("0.5") });
             await charityDonation.connect(donor1).donate(1, { value: ethers.parseEther("0.2") });
 
-            const leaderboard = await charityDonation.getDonorLeaderboard(10);
+            const allDonors = await charityDonation.getAllDonors();
 
-            expect(leaderboard[0].donorAddress).to.equal(donor2.address);
-            expect(leaderboard[1].donorAddress).to.equal(donor1.address);
+            // Sort in JS as we now do on the frontend
+            const sortedByDonation = [...allDonors].sort((a, b) => {
+                if (b.totalDonated > a.totalDonated) return 1;
+                if (a.totalDonated > b.totalDonated) return -1;
+                return 0;
+            });
+
+            expect(sortedByDonation[0].donorAddress).to.equal(donor2.address);
+            expect(sortedByDonation[1].donorAddress).to.equal(donor1.address);
         });
     });
 

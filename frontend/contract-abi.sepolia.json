@@ -1,5 +1,5 @@
 {
-  "address": "0x7a4bdBB4b2e38bDB620c09BD4a1D2a2f36e75c19",
+  "address": "0x0d578d79D939B13bccd26532C63e4e3566cEfaBF",
   "abi": [
     {
       "inputs": [],
@@ -632,6 +632,31 @@
     },
     {
       "inputs": [],
+      "name": "getAllDonors",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "donorAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalDonated",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct CharityDonation.Donor[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "getCharities",
       "outputs": [
         {
@@ -689,31 +714,13 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_limit",
-          "type": "uint256"
-        }
-      ],
-      "name": "getDonorLeaderboard",
+      "inputs": [],
+      "name": "getDonorCount",
       "outputs": [
         {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "donorAddress",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "totalDonated",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct CharityDonation.Donor[]",
+          "internalType": "uint256",
           "name": "",
-          "type": "tuple[]"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -1173,6 +1180,6 @@
   "network": "sepolia",
   "chainId": 11155111,
   "isProxy": true,
-  "implementation": "0x8EAFbE0b29c6b92382641CbB1C998E37DFFBb2Ac",
+  "implementation": "0xb0286186d1251c96355DFE2291F369b2eb13b272",
   "version": "v2.0.0"
 }

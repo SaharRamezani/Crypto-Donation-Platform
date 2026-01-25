@@ -10,6 +10,16 @@
       "address": "0x7a4bdBB4b2e38bDB620c09BD4a1D2a2f36e75c19",
       "txHash": "0xf38f7539ea4e511ad338db4ac72997fe8cbc353f664d41ea6f6046dd6c5dc09b",
       "kind": "uups"
+    },
+    {
+      "address": "0xa5db0436205eD8d454426F24821E1f5f6E95b161",
+      "txHash": "0x1df08915bdd882da8f3b89929364a8511ef8302ad52ccc510102593acf09c747",
+      "kind": "uups"
+    },
+    {
+      "address": "0x0d578d79D939B13bccd26532C63e4e3566cEfaBF",
+      "txHash": "0xadea4198e91a78e70d25801aaa71336aeac873f9bae0f35af63c0735ed8b5db4",
+      "kind": "uups"
     }
   ],
   "impls": {
@@ -1137,6 +1147,756 @@
     "457053dc4dab79b222617317ef632eaf00c3c48d5a44c8c966a7cd67ba5c3586": {
       "address": "0x8EAFbE0b29c6b92382641CbB1C998E37DFFBb2Ac",
       "txHash": "0xad325188e402c3aefd3424e6dc4a01f02c265a7fdc90ee4eeb70aa881417dda9",
+      "layout": {
+        "solcVersion": "0.8.27",
+        "storage": [
+          {
+            "label": "charityCount",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:28"
+          },
+          {
+            "label": "proposalCount",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:29"
+          },
+          {
+            "label": "totalDonations",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:30"
+          },
+          {
+            "label": "charities",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_uint256,t_struct(Charity)1904_storage)",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:64"
+          },
+          {
+            "label": "proposals",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_uint256,t_struct(CharityProposal)1919_storage)",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:65"
+          },
+          {
+            "label": "donorTotalDonations",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:66"
+          },
+          {
+            "label": "charityBalances",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:67"
+          },
+          {
+            "label": "isDonor",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:68"
+          },
+          {
+            "label": "donationHistory",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_array(t_struct(Donation)1928_storage)dyn_storage",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:71"
+          },
+          {
+            "label": "donorAddresses",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:72"
+          },
+          {
+            "label": "contractVersion",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_string_storage",
+            "contract": "CharityDonationV2",
+            "src": "contracts/CharityDonationV2.sol:14"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)26_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccessControlStorage)36_storage": {
+            "label": "struct AccessControlUpgradeable.AccessControlStorage",
+            "members": [
+              {
+                "label": "_roles",
+                "type": "t_mapping(t_bytes32,t_struct(RoleData)26_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(InitializableStorage)147_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(ReentrancyGuardStorage)300_storage": {
+            "label": "struct ReentrancyGuardUpgradeable.ReentrancyGuardStorage",
+            "members": [
+              {
+                "label": "_status",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)26_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_address_payable": {
+            "label": "address payable",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_struct(Donation)1928_storage)dyn_storage": {
+            "label": "struct CharityDonation.Donation[]",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Charity)1904_storage)": {
+            "label": "mapping(uint256 => struct CharityDonation.Charity)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(CharityProposal)1919_storage)": {
+            "label": "mapping(uint256 => struct CharityDonation.CharityProposal)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Charity)1904_storage": {
+            "label": "struct CharityDonation.Charity",
+            "members": [
+              {
+                "label": "id",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "name",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "description",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "walletAddress",
+                "type": "t_address_payable",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "totalReceived",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "isActive",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_struct(CharityProposal)1919_storage": {
+            "label": "struct CharityDonation.CharityProposal",
+            "members": [
+              {
+                "label": "id",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "name",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "description",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "walletAddress",
+                "type": "t_address_payable",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "proposer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "isProcessed",
+                "type": "t_bool",
+                "offset": 20,
+                "slot": "4"
+              },
+              {
+                "label": "isApproved",
+                "type": "t_bool",
+                "offset": 21,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_struct(Donation)1928_storage": {
+            "label": "struct CharityDonation.Donation",
+            "members": [
+              {
+                "label": "donor",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "charityId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "timestamp",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:43",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)26_storage)",
+              "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:62",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "920f2088c263d8c13c84a946fcefdcf5e1c8d47b36b5e058d65bd25ada2cb5fb": {
+      "address": "0xA311769d8287D98AFD9E3c1cbBcaC1509cE0D69c",
+      "txHash": "0xd607dccc4c215441b44f306d84c85abfe5cefde2ed200e91f69ef4b6f98e6265",
+      "layout": {
+        "solcVersion": "0.8.27",
+        "storage": [
+          {
+            "label": "charityCount",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:28"
+          },
+          {
+            "label": "proposalCount",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:29"
+          },
+          {
+            "label": "totalDonations",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:30"
+          },
+          {
+            "label": "charities",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_uint256,t_struct(Charity)1904_storage)",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:64"
+          },
+          {
+            "label": "proposals",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_uint256,t_struct(CharityProposal)1919_storage)",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:65"
+          },
+          {
+            "label": "donorTotalDonations",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:66"
+          },
+          {
+            "label": "charityBalances",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:67"
+          },
+          {
+            "label": "isDonor",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:68"
+          },
+          {
+            "label": "donationHistory",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_array(t_struct(Donation)1928_storage)dyn_storage",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:71"
+          },
+          {
+            "label": "donorAddresses",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "CharityDonation",
+            "src": "contracts/CharityDonation.sol:72"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)26_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccessControlStorage)36_storage": {
+            "label": "struct AccessControlUpgradeable.AccessControlStorage",
+            "members": [
+              {
+                "label": "_roles",
+                "type": "t_mapping(t_bytes32,t_struct(RoleData)26_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(InitializableStorage)147_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(ReentrancyGuardStorage)300_storage": {
+            "label": "struct ReentrancyGuardUpgradeable.ReentrancyGuardStorage",
+            "members": [
+              {
+                "label": "_status",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)26_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_address_payable": {
+            "label": "address payable",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_struct(Donation)1928_storage)dyn_storage": {
+            "label": "struct CharityDonation.Donation[]",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Charity)1904_storage)": {
+            "label": "mapping(uint256 => struct CharityDonation.Charity)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(CharityProposal)1919_storage)": {
+            "label": "mapping(uint256 => struct CharityDonation.CharityProposal)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Charity)1904_storage": {
+            "label": "struct CharityDonation.Charity",
+            "members": [
+              {
+                "label": "id",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "name",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "description",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "walletAddress",
+                "type": "t_address_payable",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "totalReceived",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "isActive",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_struct(CharityProposal)1919_storage": {
+            "label": "struct CharityDonation.CharityProposal",
+            "members": [
+              {
+                "label": "id",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "name",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "description",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "walletAddress",
+                "type": "t_address_payable",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "proposer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "isProcessed",
+                "type": "t_bool",
+                "offset": 20,
+                "slot": "4"
+              },
+              {
+                "label": "isApproved",
+                "type": "t_bool",
+                "offset": 21,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_struct(Donation)1928_storage": {
+            "label": "struct CharityDonation.Donation",
+            "members": [
+              {
+                "label": "donor",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "charityId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "timestamp",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:43",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)26_storage)",
+              "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:62",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "2401a7c3c9056831c8d5730d027de4f2a0a97068632554586004dcdc8ddc7419": {
+      "address": "0xb0286186d1251c96355DFE2291F369b2eb13b272",
+      "txHash": "0x16017af9434ee18fe670a519b4d9c3bade90cccff41e5df994423a524d18b419",
       "layout": {
         "solcVersion": "0.8.27",
         "storage": [
