@@ -84,57 +84,11 @@ docker compose down
 
 ---
 
-## Upgrading to V2
-
-The contract uses the **UUPS (Universal Upgradeable Proxy Standard)** pattern. This allows you to upgrade the contract logic without changing the proxy address or losing any data.
-
-### How to Upgrade
-
-To upgrade an existing V1 deployment to V2:
-
-```bash
-# Local Hardhat
-npm run upgrade:local
-
-# Inside the docker container
-docker compose run --rm deployer npm run upgrade:docker
-
-# Sepolia Testnet
-npm run upgrade:sepolia
-```
-
-### What the Upgrade Script Does
-
-1. **Loads the existing proxy address** from `deployments/`
-2. **Deploys the new V2 implementation** contract
-3. **Calls `upgradeProxy()`** to swap the logic
-4. **Verifies by calling `getVersion()`** - returns "v2.0.0"
-5. **Updates the frontend ABI** with V2 functions
-
-### V2 Features
-
-| Function | Description |
-|----------|-------------|
-| `getVersion()` | Returns the hardcoded version string "v2.0.0" |
-| `contractVersion()` | State variable for custom version string |
-| `setVersion(string)` | Admin-only: set a custom version |
-
-### Reset Project (Start Fresh)
-
-If you ever see errors like "Deployment not registered" or "doesn't look like an ERC 1967 proxy", it usually means your local files are out of sync with a fresh blockchain. You can start completely fresh with:
-
-```bash
-npm run reset:docker
-```
-*Note: This wipes all local donations and charity proposals.*
-
----
-
-## Local Development with Hardhat
+# Local Development with Hardhat
 
 If you want to test transactions locally without deploying to Sepolia:
 
-### Step 1: Force Local Hardhat Mode
+## Step 1: Force Local Hardhat Mode
 
 By default, Docker uses your Sepolia deployment if it exists. To force local mode:
 
@@ -148,7 +102,7 @@ docker compose up --build
 
 When you move from Hardhat to Sepolia (and vice versa), you need to modify the .env file and change the private key, Metasmask network, clear the cache, and refresh the page.
 
-### Step 2: Add Hardhat Network to MetaMask
+## Step 2: Add Hardhat Network to MetaMask
 
 1. Open MetaMask → Click network dropdown → **Add Network**
 2. Enter these settings:
@@ -160,7 +114,7 @@ When you move from Hardhat to Sepolia (and vice versa), you need to modify the .
 | Chain ID | `31337` |
 | Currency Symbol | ETH |
 
-### Step 3: Import a Test Account
+## Step 3: Import a Test Account
 
 Hardhat provides pre-funded test accounts. Import one into MetaMask:
 
@@ -176,7 +130,7 @@ Hardhat provides pre-funded test accounts. Import one into MetaMask:
 
 > **Note**: These are test accounts with fake ETH. Never use these private keys on mainnet!
 
-### Step 4: Restore Sepolia Mode
+## Step 4: Restore Sepolia Mode
 
 When done testing locally:
 
@@ -187,17 +141,17 @@ docker compose down && docker compose up
 
 ---
 
-## Deploy to Sepolia (Public Testnet)
+# Deploy to Sepolia (Public Testnet)
 
 This section explains how to deploy your contract to the real Sepolia testnet so anyone in the world can interact with it.
 
-### Prerequisites
+## Prerequisites
 
 - [MetaMask](https://metamask.io/) browser extension
 - Node.js and npm installed
 - Some Sepolia testnet ETH (free, see below)
 
-### Step 1: Get Sepolia ETH (Free)
+## Step 1: Get Sepolia ETH (Free)
 
 You need testnet ETH to pay for gas fees. Get it from a faucet:
 
@@ -209,7 +163,7 @@ You need testnet ETH to pay for gas fees. Get it from a faucet:
 
 > **Tip**: Copy your MetaMask wallet address and paste it into the faucet. You'll receive 0.1-0.5 Sepolia ETH, which is more than enough for deployment.
 
-### Step 2: Get an RPC URL
+## Step 2: Get an RPC URL
 
 You need an RPC endpoint to connect to Sepolia. Choose a provider:
 
@@ -223,7 +177,7 @@ You need an RPC endpoint to connect to Sepolia. Choose a provider:
 2. Create a new project → Select "Web3 API"
 3. Copy the Sepolia endpoint
 
-### Step 3: Export Your Private Key from MetaMask
+## Step 3: Export Your Private Key from MetaMask
 
 > ⚠️ **SECURITY WARNING**: Never share your private key. Never commit it to git. Only use a wallet with testnet ETH for development.
 
@@ -234,7 +188,7 @@ You need an RPC endpoint to connect to Sepolia. Choose a provider:
 5. Enter your MetaMask password
 6. Copy the private key (without the `0x` prefix)
 
-### Step 4: Configure Your .env File
+## Step 4: Configure Your .env File
 
 ```bash
 # Copy the example environment file
@@ -254,7 +208,7 @@ PRIVATE_KEY=your_private_key_here
 ETHERSCAN_API_KEY=your_etherscan_api_key
 ```
 
-### Step 5: Deploy the V1 Proxy
+## Step 5: Deploy the V1 Proxy
 
 ```bash
 # Install dependencies
@@ -269,15 +223,7 @@ npm run deploy:sepolia
 
 > **Save these addresses!** The Proxy Address is what users will interact with.
 
-### Step 6: Upgrade to V2 (Optional)
-
-After deploying V1, you can upgrade to V2 to enable version tracking:
-
-```bash
-npm run upgrade:sepolia
-```
-
-### Step 7: Verify on Etherscan (Optional)
+## Step 6: Verify on Etherscan (Optional)
 
 Verification makes your source code public and allows users to interact with your contract directly on Etherscan.
 
@@ -289,10 +235,13 @@ Verification makes your source code public and allows users to interact with you
 npx hardhat verify --network sepolia <IMPLEMENTATION_ADDRESS>
 ```
 
+> [!NOTE]
+> If you see an error saying "Failed to verify ERC1967Proxy contract... Already Verified", this is expected! It means the proxy structure itself is already known by Etherscan. The important part is that your implementation contract is verified and linked.
+
 Once verified, view your contract at:
 `https://sepolia.etherscan.io/address/YOUR_PROXY_ADDRESS`
 
-### Step 8: Use the Frontend with Sepolia
+## Step 7: Use the Frontend with Sepolia
 
 After deployment, the `contract-abi.sepolia.json` file is automatically created in your `frontend/` folder.
 
@@ -303,14 +252,60 @@ After deployment, the `contract-abi.sepolia.json` file is automatically created 
 
 ---
 
-## Security Features
+# Upgrading to V2
+
+The contract uses the **UUPS (Universal Upgradeable Proxy Standard)** pattern. This allows you to upgrade the contract logic without changing the proxy address or losing any data.
+
+## How to Upgrade
+
+To upgrade an existing V1 deployment to V2:
+
+```bash
+# Local Hardhat
+npm run upgrade:local
+
+# Inside the docker container
+docker compose run --rm deployer npm run upgrade:docker
+
+# Sepolia Testnet
+npm run upgrade:sepolia
+```
+
+## What the Upgrade Script Does
+
+1. **Loads the existing proxy address** from `deployments/`
+2. **Deploys the new V2 implementation** contract
+3. **Calls `upgradeProxy()`** to swap the logic
+4. **Verifies by calling `getVersion()`** - returns "v2.0.0"
+5. **Updates the frontend ABI** with V2 functions
+
+### V2 Features
+
+| Function | Description |
+|----------|-------------|
+| `getVersion()` | Returns the hardcoded version string "v2.0.0" |
+| `contractVersion()` | State variable for custom version string |
+| `setVersion(string)` | Admin-only: set a custom version |
+
+## Reset Project (Start Fresh)
+
+If you ever see errors like "Deployment not registered" or "doesn't look like an ERC 1967 proxy", it usually means your local files are out of sync with a fresh blockchain. You can start completely fresh with:
+
+```bash
+npm run reset:docker
+```
+*Note: This wipes all local donations and charity proposals.*
+
+---
+
+# Security Features
 
 - **Reentrancy Guard** - Prevents reentrancy attacks on `donate()` and `withdrawFunds()`
 - **Checks-Effects-Interactions** - State updates before external calls
 - **Access Control** - Role-based permissions for admin functions
 - **UUPS Proxy** - Upgrades require admin authorization via `_authorizeUpgrade()`
 
-### Pull over Push Pattern
+## Pull over Push Pattern
 
 Instead of automatically sending donations to charities, funds accumulate in the contract. Charities must manually withdraw their funds:
 
@@ -322,21 +317,62 @@ This prevents reentrancy attacks and ensures reliable donation processing.
 
 ---
 
-## Troubleshooting
+# Troubleshooting
 
-### MetaMask Nonce Issues
+## MetaMask Nonce Issues
 
 If you restart Hardhat node, MetaMask may have stale transaction data:
 
 1. Open **MetaMask** → **Settings** → **Advanced**
 2. Click **"Clear activity tab data"**
 
-### Wrong Network Error
+## Wrong Network Error
 
 If you see "CALL_EXCEPTION" or "Connection Failed":
 - Switch MetaMask to the correct network (Sepolia or Hardhat Local)
 - Ensure the RPC URL is accessible
 
-### "GoChain Testnet" Warning
+## "GoChain Testnet" Warning
 
 When adding Chain ID `31337`, MetaMask may suggest "GoChain Testnet". This is a known ID collision with Hardhat. Simply rename it to "Hardhat Local".
+
+---
+
+# Share Remotely with Cloudflare Tunnel
+
+To demo the project to remote stakeholders using your laptop as a server:
+
+#### Step 1: Install Cloudflared
+
+```bash
+wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+sudo dpkg -i cloudflared-linux-amd64.deb
+```
+
+#### Step 2: Start Your Project
+
+```bash
+docker compose up
+```
+
+#### Step 3: Create a Public Tunnel
+
+In a new terminal:
+
+```bash
+cloudflared tunnel --url http://localhost:3000
+```
+
+You'll see output like:
+```
+|  Your quick Tunnel has been created! Visit it at:                    |
+|  https://random-words-here.trycloudflare.com                         |
+```
+
+Share this URL with stakeholders!
+
+#### Important Notes
+
+- **Keep both terminals running** (docker compose + cloudflared)
+- **Stakeholders need MetaMask** connected to Sepolia to interact with the real contract
+- **URL changes each time** you restart cloudflared (unless you create a named tunnel with a Cloudflare account)
