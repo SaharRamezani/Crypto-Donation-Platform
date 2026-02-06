@@ -14,6 +14,23 @@ A decentralized application (dApp) for donating Sepolia ETH to charitable organi
 - **Transaction History** - View all donations via events
 - **Security** - Reentrancy protection, AccessControl (Roles), and UUPS Proxy
 
+## Screenshots
+
+### Main Dashboard (light mode)
+![Charities Overview](images/charities.png)
+
+### Main Dashboard (dark mode)
+![Charities Overview](images/charities_dark.png)
+
+### Leaderboard & Transactions
+![Top Donors and Recent Transactions](images/top_donors-recent_transactions.png)
+
+### Propose a Charity
+![Propose a Charity Page](images/propose_charity.png)
+
+### Admin Governance
+![Role Management](images/role_management.png)
+
 ## Project Structure
 
 ```
